@@ -2,12 +2,12 @@
 import { z } from "zod";
 
 export const ENCOURAGEMENT_CATALOG = [
-  { id: "bravo", text: "Bravo pour tes pas du jour !" },
-  { id: "keep_going", text: "Continue comme ça, tu avances bien !" },
-  { id: "almost_there", text: "Encore un petit effort, tu y es presque !" },
-  { id: "walk_together", text: "Et si on allait marcher ensemble ?" },
-  { id: "hats_off", text: "Chapeau pour ta journée !" },
-  { id: "nice_walk", text: "Belle balade à toi !" },
+  { id: "bravo", text: "Bravo pour ta marche !" },
+  { id: "one_more_lap", text: "Allez, encore un petit tour !" },
+  { id: "nice_day", text: "Belle journée pour marcher" },
+  { id: "inspiring", text: "Tu m'inspires !" },
+  { id: "walk_tomorrow", text: "On marche ensemble demain ?" },
+  { id: "consistency", text: "Quelle régularité !" },
 ] as const;
 
 export type EncouragementMessageId = (typeof ENCOURAGEMENT_CATALOG)[number]["id"];

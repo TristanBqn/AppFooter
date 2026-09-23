@@ -6,6 +6,8 @@ import { PublicUserSchema, TimestampSchema, UserIdSchema, UsernameSchema } from 
 export const FriendSchema = PublicUserSchema.extend({
   todaySteps: z.int().min(0),
   friendsSince: TimestampSchema,
+  /** Déjà encouragé par moi aujourd'hui (jour local de l'expéditeur) : un envoi renverrait 429. */
+  encouragedToday: z.boolean(),
 });
 export type Friend = z.infer<typeof FriendSchema>;
 
