@@ -1,7 +1,7 @@
 # Avancement (tenu par le lead)
 
 > Pas d'outil de liste de tâches partagé dans cette équipe : ce fichier fait foi pour reprendre (`/equipe reprendre`).
-> Définition des tâches : `docs/architecture.md` §9. Mis à jour : 2026-09-24.
+> Définition des tâches : `docs/architecture.md` §9. Mis à jour : 2026-09-24, tous les coéquipiers arrêtés proprement (limite d’usage).
 
 ## Phase en cours : 2 (construction)
 Validation humaine n°1 obtenue le 2026-09-24.
@@ -12,12 +12,12 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | B2 schéma et migrations | terminé | ac9246a |
 | B3 sessions, dev login, /me, pseudonyme | terminé | f4b686e |
 | B4 Sign in with Apple | terminé | voir git log |
-| B5 paramètres, consentement, synchro, historique | **en cours** | — |
+| B5 paramètres, consentement, synchro, historique | **en cours, WIP commité** (check vert mais tâche non déclarée terminée : à relire et compléter) | WIP |
 | B6 → B12 | à faire | — |
 | M1 scaffolding mobile + aperçu web | terminé | fb60949 |
 | M2 client API et session | terminé | 7aa4b20 |
 | M3 HealthSource | terminé | e7255e6 |
-| M4 connexion Apple, pseudonyme, consentement | **en cours** (pas encore de fichiers) | — |
+| M4 connexion Apple, pseudonyme, consentement | **en cours, WIP commité** (écrans (auth) commencés : à relire et compléter ; vérifier les 2 demandes ouvertes) | WIP |
 | M5 → M11 | à faire | — |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
 | R1–R3 | phase 3 | — |

@@ -12,6 +12,7 @@ import type { Env } from "./env";
 import { AppError } from "./errors";
 import { bearerAuth } from "./middleware/auth";
 import { rateLimit } from "./middleware/rate-limit";
+import { registerActivityRoutes } from "./modules/activity/routes";
 import { createAppleClients } from "./modules/auth/apple/factory";
 import type { AppleIdentityVerifier } from "./modules/auth/apple/identity-verifier";
 import type { AppleTokenClient } from "./modules/auth/apple/token-client";
@@ -85,6 +86,7 @@ export function createApp(options: CreateAppOptions): AppHono {
 
   registerAuthRoutes(app, deps);
   registerMeRoutes(app, deps);
+  registerActivityRoutes(app, deps);
 
   app.notFound((c) => {
     const body: ApiError = { error: { code: "NOT_FOUND", message: "Route inconnue" } };

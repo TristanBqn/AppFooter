@@ -1,17 +1,9 @@
 // Choix de la source de santé (ADR 002) et garde de production.
-import Constants from "expo-constants";
+import { getEasBuildProfile } from "../env";
 
 export type HealthSourceKind = "healthkit" | "simulated";
 
-/**
- * Profil EAS ayant produit ce build (`extra.easBuildProfile`, injecté par app.config.ts depuis
- * `process.env.EAS_BUILD_PROFILE`). `null` hors d'un build EAS (expo start/export, dev build
- * lancé localement) : ce n'est alors jamais un build de production.
- */
-export function getEasBuildProfile(): string | null {
-  const value = Constants.expoConfig?.extra?.easBuildProfile;
-  return typeof value === "string" ? value : null;
-}
+export { getEasBuildProfile };
 
 /**
  * `simulated` est refusé si le profil EAS est `production` (ADR 002, RGPD : jamais de données

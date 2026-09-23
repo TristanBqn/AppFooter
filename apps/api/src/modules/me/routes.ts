@@ -1,16 +1,22 @@
-// GET /me, PUT /me/username (CA1, CA2). Le reste de `/me/*` arrive en B5 (paramètres, consentement,
-// synchro) et B11 (suppression du compte).
+// GET /me, PUT /me/username (CA1, CA2), GET/PATCH /me/settings, PUT /me/consents/health (F15,
+// ADR 006). Suppression du compte : B11.
 import {
+  HealthConsentRequestSchema,
+  HealthConsentResponseSchema,
   MeSchema,
   RATE_LIMIT_USERNAME_PER_MINUTE_PER_USER,
+  SettingsSchema,
   SetUsernameRequestSchema,
+  UpdateSettingsRequestSchema,
 } from "@app/contracts";
 import type { AppDeps, AppHono } from "../../context";
 import { AppError } from "../../errors";
 import { parseJsonBody } from "../../lib/validate";
 import { rateLimit } from "../../middleware/rate-limit";
 import { setUsername } from "../auth/users";
+import { setHealthConsent } from "./consent-service";
 import { loadMe } from "./service";
+import { getSettings, updateSettings } from "./settings-service";
 
 const ONE_MINUTE_MS = 60_000;
 
@@ -43,4 +49,32 @@ export function registerMeRoutes(app: AppHono, deps: AppDeps): void {
       return c.json(MeSchema.parse(me), 200);
     },
   );
+
+  app.get("/me/settings", async (c) => {
+    const auth = c.get("auth");
+    if (!auth) throw new AppError("UNAUTHENTICATED", "Authentification requise");
+    const settings = await getSettings(deps.db, auth.userId);
+    if (!settings) throw new AppError("UNAUTHENTICATED", "Utilisateur introuvable");
+    return c.json(SettingsSchema.parse(settings), 200);
+  });
+
+  app.patch("/me/settings", async (c) => {
+    const auth = c.get("auth");
+    if (!auth) throw new AppError("UNAUTHENTICATED", "Authentification requise");
+    const body = await parseJsonBody(c, UpdateSettingsRequestSchema);
+    const settings = await updateSettings(deps.db, auth.userId, body);
+    if (!settings) throw new AppError("UNAUTHENTICATED", "Utilisateur introuvable");
+    return c.json(SettingsSchema.parse(settings), 200);
+  });
+
+  app.put("/me/consents/health", async (c) => {
+    const auth = c.get("auth");
+    if (!auth) throw new AppError("UNAUTHENTICATED", "Authentification requise");
+    const body = await parseJsonBody(c, HealthConsentRequestSchema);
+    const healthConsentAt = await setHealthConsent(deps.db, auth.userId, body.granted, deps.now());
+    return c.json(
+      HealthConsentResponseSchema.parse({ healthConsentAt: healthConsentAt?.toISOString() ?? null }),
+      200,
+    );
+  });
 }

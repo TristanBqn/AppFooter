@@ -33,6 +33,8 @@ const config: ExpoConfig = {
     ],
     "expo-font",
     "expo-secure-store",
+    "expo-apple-authentication",
+    "expo-web-browser",
     [
       "@kingstinct/react-native-healthkit",
       {
