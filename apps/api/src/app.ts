@@ -1,23 +1,23 @@
-// Application Hono : en-têtes de sécurité, journal structuré, route /health, enveloppe
-// d'erreur unique du contrat (400 validation, 404 JSON, 500 sans détail interne).
+// Application Hono : en-têtes de sécurité, journal structuré, authentification Bearer (CA1),
+// enveloppe d'erreur unique du contrat (400 validation, 404 JSON, 500 sans détail interne).
 // Les routes métier sont ajoutées tâche par tâche (B3 et suivantes).
 import type { ApiError } from "@app/contracts";
+import { RATE_LIMIT_PER_MINUTE_PER_USER } from "@app/contracts";
 import type { Db } from "@app/db";
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { AppDeps, AppHono } from "./context";
+import type { Env } from "./env";
 import { AppError } from "./errors";
+import { bearerAuth } from "./middleware/auth";
+import { rateLimit } from "./middleware/rate-limit";
+import { registerAuthRoutes } from "./modules/auth/routes";
+import { registerMeRoutes } from "./modules/me/routes";
 
-export interface AppDeps {
-  db: Db;
-}
+const ONE_MINUTE_MS = 60_000;
 
-export interface AppVariables {
-  requestId: string;
-  deps: AppDeps;
-}
-
-export type AppHono = Hono<{ Variables: AppVariables }>;
+export type { AppDeps, AppHono } from "./context";
 
 function logLine(level: "info" | "error", fields: Record<string, unknown>): void {
   const line = JSON.stringify({ level, ...fields });
@@ -25,7 +25,15 @@ function logLine(level: "info" | "error", fields: Record<string, unknown>): void
   else console.log(line);
 }
 
-export function createApp(deps: AppDeps): AppHono {
+export interface CreateAppOptions {
+  db: Db;
+  env: Env;
+  /** Horloge injectable (tests). Par défaut `() => new Date()`. */
+  now?: () => Date;
+}
+
+export function createApp(options: CreateAppOptions): AppHono {
+  const deps: AppDeps = { db: options.db, env: options.env, now: options.now ?? (() => new Date()) };
   const app: AppHono = new Hono();
 
   app.use("*", secureHeaders());
@@ -45,6 +53,25 @@ export function createApp(deps: AppDeps): AppHono {
   });
 
   app.get("/health", (c) => c.json({ status: "ok" as const }, 200));
+
+  // Authentification (CA1) : pose `c.get("auth")` sur toute route hors PUBLIC_ROUTES, sinon 401.
+  app.use("*", bearerAuth);
+
+  // Débit par utilisateur authentifié (ADR 007) ; no-op sur les routes publiques (pas d'auth).
+  app.use(
+    "*",
+    rateLimit({
+      max: RATE_LIMIT_PER_MINUTE_PER_USER,
+      windowMs: ONE_MINUTE_MS,
+      keyFn: (c) => {
+        const auth = c.get("auth");
+        return auth ? `user:${auth.userId}` : null;
+      },
+    }),
+  );
+
+  registerAuthRoutes(app, deps);
+  registerMeRoutes(app, deps);
 
   app.notFound((c) => {
     const body: ApiError = { error: { code: "NOT_FOUND", message: "Route inconnue" } };

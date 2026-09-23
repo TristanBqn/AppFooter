@@ -8,7 +8,7 @@ import { loadEnv } from "./env";
 const env = loadEnv();
 const { db, migrate, close } = await createDb(env.databaseUrl);
 await migrate();
-const app = createApp({ db });
+const app = createApp({ db, env });
 
 const server = serve({ fetch: app.fetch, port: env.apiPort }, (info) => {
   console.log(JSON.stringify({ level: "info", message: "api_started", port: info.port, appEnv: env.appEnv }));
