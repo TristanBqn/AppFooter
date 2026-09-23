@@ -55,6 +55,8 @@ export const FriendActivityResponseSchema = z.object({
   today: ActivityDaySchema,
   /** FRIEND_HISTORY_DAYS derniers jours, date décroissante, jours vides omis. */
   history: z.array(ActivityDaySchema),
+  /** Dernière synchro connue de l'ami (affichage « mis à jour il y a X », pas de sync en arrière-plan en V1). */
+  lastSyncAt: TimestampSchema.nullable(),
 });
 export type FriendActivityResponse = z.infer<typeof FriendActivityResponseSchema>;
 

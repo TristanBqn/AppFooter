@@ -1,0 +1,30 @@
+{
+  "name": "@app/api",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "tsc --noEmit && vitest run",
+    "build": "node scripts/build.mjs",
+    "start": "node dist/server.js",
+    "start:e2e": "cross-env APP_ENV=test DATABASE_URL= ENABLE_DEV_LOGIN=true PUSH_TRANSPORT=console API_PORT=4000 tsx src/server.ts"
+  },
+  "dependencies": {
+    "@app/contracts": "workspace:*",
+    "@app/db": "workspace:*",
+    "@electric-sql/pglite": "^0.5.8",
+    "@hono/node-server": "^2.1.1",
+    "drizzle-orm": "^0.45.3",
+    "hono": "^4.13.8",
+    "pg": "^8.23.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15"
+  }
+}
