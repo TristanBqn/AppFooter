@@ -35,7 +35,7 @@ Validation humaine n°1 obtenue le 2026-09-24.
 - Tests mobiles : vitest (logique) ; accessibilité vérifiée par la checklist M11 et la revue visuelle.
 
 ## En attente de l'utilisateur
-- Confirmer `ios.bundleIdentifier` (placeholder `fr.tristanbqn.footer`) et le Team ID Apple, avant M4/M10 et tout build EAS.
+- `ios.bundleIdentifier` = `fr.tristanbqn.footer` (provisoire, à revoir plus tard ; projet personnel : aucune référence professionnelle). Le reporter dans `APPLE_BUNDLE_ID` côté API. Team ID Apple à fournir avant tout build EAS.
 - Validation de l'icône (`packages/ui/assets/icon.png`).
 - Compte Apple Developer pour le dev build sur iPhone.
 
