@@ -110,7 +110,7 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
 1. **En-tête** : date `subheadline textSecondary` (« Jeudi 24 septembre ») ; `largeTitle` « Bonjour {pseudo} » ; bouton engrenage (VoiceOver « Paramètres »).
 2. **Carte anneau** (`GlassCard` + `StepRing` 240 pt) :
    - centre : `hero` « 8 450 » + `body textSecondary` « pas aujourd'hui » ;
-   - sous l'anneau : `headline` « Encore 1 550 pas pour 10 000 » (`progressToNext` sur les seuils 5 000 / 10 000 / 15 000 fournis par l'app ou le contrat) ;
+   - sous l'anneau : `headline` « Encore 1 550 pas pour 10 000 » (`nextMilestone` et `stepsToNextMilestone` de `/me/today` ; fraction de l'anneau via `progressToNext(steps, STEP_MILESTONES)`) ;
    - tous les seuils franchis : anneau plein + « Tous les paliers du jour sont franchis. Bravo ! » ;
    - 0 pas : « Ta journée commence. Chaque pas compte. » ;
    - VoiceOver anneau : label « Progression vers 10 000 pas », valeur « 8 450 pas sur 10 000 ».
@@ -163,8 +163,8 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
 Push depuis Classement ou Amis. Titre de navigation : pseudo.
 
 1. **Carte activité** : `Monogram` 64, pseudo `title2`, `StepRing` 160 (progression de l'ami vers son prochain seuil) avec « 6 120 pas aujourd'hui » ; « 210 kcal » si l'ami partage ses calories, sinon rien (pas de mention « masqué »).
-2. **Encourager** (`GlassCard`) : titre `headline` « Envoie-lui un mot » ; grille de `Chip` issus du catalogue fermé (contrat). Un toucher = envoi (action principale, pas de confirmation). Après envoi : la puce envoyée passe `selected`, les autres `disabled`, sous-texte « Envoyé aujourd'hui. Tu pourras l'encourager à nouveau demain. » ; `Toast` « Encouragement envoyé à marc_d » + haptique. Erreur 429 (déjà envoyé) : même état « Envoyé aujourd'hui… » sans ton d'erreur.
-   - *Proposition de catalogue (à valider avec l'architect, source : contrat)* : « Bravo pour ta marche ! », « Allez, encore un petit tour ! », « Belle journée pour marcher », « Tu m'inspires ! », « On marche ensemble demain ? », « Quelle régularité ! ».
+2. **Encourager** (`GlassCard`) : titre `headline` « Envoie-lui un mot » ; grille de `Chip` issus de `ENCOURAGEMENT_CATALOG` (`@app/contracts`). Un toucher = envoi (action principale, pas de confirmation). Après envoi dans la session : la puce envoyée passe `selected`, les autres `disabled`. Si `encouragedToday` (`FriendSchema`, GET /friends) est vrai à l'ouverture : toutes les puces `disabled` (le message envoyé n'est pas connu), même sous-texte. Dans les deux cas, sous-texte « Envoyé aujourd'hui. Tu pourras l'encourager à nouveau demain. » ; `Toast` « Encouragement envoyé à marc_d » + haptique. Erreur 429 (déjà envoyé) : même état « Envoyé aujourd'hui… » sans ton d'erreur.
+   - Catalogue (contrat) : « Bravo pour ta marche ! », « Allez, encore un petit tour ! », « Belle journée pour marcher », « Tu m'inspires ! », « On marche ensemble demain ? », « Quelle régularité ! ». VoiceOver : « Envoyer à marc_d : Bravo pour ta marche ! ».
 3. **Historique récent** (7 derniers jours) : 7 `ProgressBar` horizontales (jour abrégé + pas), échelle relative au meilleur jour de la période.
 4. **Actions sensibles** (bas de page, séparées) : `ghost` « Retirer de mes amis » et `ghost` couleur `danger` « Bloquer {pseudo} ». Chacune ouvre un `ConfirmSheet` (CA14) :
    - Retirer : titre « Retirer lea de tes amis ? » ; message « Vous ne verrez plus vos activités respectives. Tu pourras l'ajouter à nouveau plus tard. » ; « Retirer ».
@@ -221,7 +221,7 @@ Push depuis Paramètres. Titre « Supprimer mon compte ».
 
 ## Points ouverts
 1. **Ordre consentement / connexion** : (A) consentement après connexion (retenu : horodatage serveur possible) ; (B) avant connexion (stocké localement puis transmis). À trancher par le lead.
-2. **Catalogue d'encouragements** et **seuils** : sources = `@app/contracts`. Libellés proposés en §7.
+2. ~~Catalogue et seuils~~ : réglé (`ENCOURAGEMENT_CATALOG`, `STEP_MILESTONES`, `encouragedToday` dans `@app/contracts`). `encouragedToday` n'est pas sur les entrées du classement : non nécessaire, le profil ami le lit depuis GET /friends.
 3. **Demandes désactivées chez le destinataire** : réponse neutre identique à « inconnu » proposée (cohérent CA7).
 4. **Logo** : proposition « nuage + empreinte arrondie », à dessiner en phase 2 si validé.
 5. Dépendances à prévoir côté mobile : `expo-blur`, `expo-linear-gradient`, `react-native-svg` (peer deps de `@app/ui`), `expo-symbols`, `expo-haptics`, `expo-apple-authentication`, `react-native-safe-area-context` (marges des feuilles et toasts).

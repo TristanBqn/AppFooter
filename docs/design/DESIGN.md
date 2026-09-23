@@ -28,7 +28,7 @@
 
 ## 5. Ton des textes
 - Tutoiement ; français uniquement en V1.
-- Style amical, encourageant, jamais culpabilisant (pas de « tu es dernier », préférer « encore 1 200 pas pour dépasser Léa »).
+- Style amical, encourageant, jamais culpabilisant (pas de « tu es dernier », préférer « encore 1 201 pas pour dépasser Léa » (écart + 1)).
 
 ## 6. À éviter absolument
 - Esthétique sportive ou agressive (noir/rouge, typographies condensées, chronos, podiums écrasants).
