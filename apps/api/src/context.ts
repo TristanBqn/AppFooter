@@ -2,12 +2,16 @@
 import type { Db } from "@app/db";
 import type { Hono } from "hono";
 import type { Env } from "./env";
+import type { AppleIdentityVerifier } from "./modules/auth/apple/identity-verifier";
+import type { AppleTokenClient } from "./modules/auth/apple/token-client";
 
 export interface AppDeps {
   db: Db;
   env: Env;
   /** Horloge injectable (tests d'expiration de session, heures silencieuses…). */
   now: () => Date;
+  appleIdentityVerifier: AppleIdentityVerifier;
+  appleTokenClient: AppleTokenClient;
 }
 
 /** Posé par le middleware d'authentification (`middleware/auth.ts`) sur les routes non publiques. */

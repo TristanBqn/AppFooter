@@ -12,6 +12,9 @@ import type { Env } from "./env";
 import { AppError } from "./errors";
 import { bearerAuth } from "./middleware/auth";
 import { rateLimit } from "./middleware/rate-limit";
+import { createAppleClients } from "./modules/auth/apple/factory";
+import type { AppleIdentityVerifier } from "./modules/auth/apple/identity-verifier";
+import type { AppleTokenClient } from "./modules/auth/apple/token-client";
 import { registerAuthRoutes } from "./modules/auth/routes";
 import { registerMeRoutes } from "./modules/me/routes";
 
@@ -30,10 +33,20 @@ export interface CreateAppOptions {
   env: Env;
   /** Horloge injectable (tests). Par défaut `() => new Date()`. */
   now?: () => Date;
+  /** Remplacés dans les tests (JWKS/clé Apple locaux). Par défaut construits depuis `env`. */
+  appleIdentityVerifier?: AppleIdentityVerifier;
+  appleTokenClient?: AppleTokenClient;
 }
 
 export function createApp(options: CreateAppOptions): AppHono {
-  const deps: AppDeps = { db: options.db, env: options.env, now: options.now ?? (() => new Date()) };
+  const appleDefaults = createAppleClients(options.env);
+  const deps: AppDeps = {
+    db: options.db,
+    env: options.env,
+    now: options.now ?? (() => new Date()),
+    appleIdentityVerifier: options.appleIdentityVerifier ?? appleDefaults.appleIdentityVerifier,
+    appleTokenClient: options.appleTokenClient ?? appleDefaults.appleTokenClient,
+  };
   const app: AppHono = new Hono();
 
   app.use("*", secureHeaders());

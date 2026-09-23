@@ -2,6 +2,8 @@
 import { createDb, type DbHandle } from "@app/db";
 import { createApp } from "./app";
 import type { Env } from "./env";
+import type { AppleIdentityVerifier } from "./modules/auth/apple/identity-verifier";
+import type { AppleTokenClient } from "./modules/auth/apple/token-client";
 
 export function testEnv(overrides: Partial<Env> = {}): Env {
   return {
@@ -26,9 +28,22 @@ export interface TestApp extends DbHandle {
   app: ReturnType<typeof createApp>;
 }
 
-export async function createTestApp(options: { env?: Partial<Env>; now?: () => Date } = {}): Promise<TestApp> {
+export interface CreateTestAppOptions {
+  env?: Partial<Env>;
+  now?: () => Date;
+  appleIdentityVerifier?: AppleIdentityVerifier;
+  appleTokenClient?: AppleTokenClient;
+}
+
+export async function createTestApp(options: CreateTestAppOptions = {}): Promise<TestApp> {
   const handle = await createDb("");
   await handle.migrate();
-  const app = createApp({ db: handle.db, env: testEnv(options.env), now: options.now });
+  const app = createApp({
+    db: handle.db,
+    env: testEnv(options.env),
+    now: options.now,
+    appleIdentityVerifier: options.appleIdentityVerifier,
+    appleTokenClient: options.appleTokenClient,
+  });
   return { ...handle, app };
 }
