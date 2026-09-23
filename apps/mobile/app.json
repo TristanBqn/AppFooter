@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Footer",
+    "slug": "footer",
+    "scheme": "footer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#EEF7FF",
+    "ios": {
+      "bundleIdentifier": "fr.tristanbqn.footer",
+      "supportsTablet": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "17.0"
+          }
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
