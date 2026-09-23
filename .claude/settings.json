@@ -1,0 +1,43 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(pnpm *)",
+      "Bash(node *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/scope-guard.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/task-gate.mjs\"",
+            "timeout": 600,
+            "statusMessage": "Vérification pnpm check du périmètre…"
+          }
+        ]
+      }
+    ]
+  }
+}

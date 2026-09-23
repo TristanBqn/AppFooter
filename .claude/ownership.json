@@ -1,0 +1,31 @@
+{
+  "_comment": "Carte de propriété : chemins (préfixes, relatifs à la racine) que chaque agent peut écrire. Le lead (session principale) n'est pas restreint. Propriétaire : lead.",
+  "architect": [
+    "docs/architecture.md",
+    "docs/adr/",
+    "packages/contracts/"
+  ],
+  "designer": [
+    "docs/design/",
+    "packages/ui/"
+  ],
+  "backend": [
+    "apps/api/",
+    "packages/db/",
+    "packages/contracts/",
+    "package.json",
+    "pnpm-workspace.yaml",
+    "turbo.json",
+    "tsconfig.base.json",
+    ".github/",
+    ".env.example"
+  ],
+  "mobile": [
+    "apps/mobile/"
+  ],
+  "reviewer": [
+    "tests/e2e/",
+    "playwright.config.ts",
+    "docs/review.md"
+  ]
+}

@@ -1,0 +1,64 @@
+ooter est une application iPhone qui motive les utilisateurs à marcher davantage grâce à une compétition amicale entre proches.
+
+L’objectif est de rendre la marche :
+
+plus ludique ;
+plus sociale ;
+plus motivante au quotidien ;
+sans pression sportive ni compétition agressive.
+Les utilisateurs comparent leurs pas, suivent leur classement et s’encouragent dans un environnement privé et bienveillant.
+
+Fonctionnalités principales
+Connexion avec Apple.
+Lecture des pas et calories depuis Apple Santé.
+Exclusion des pas ajoutés manuellement.
+Affichage de l’activité quotidienne.
+Classement quotidien entre amis.
+Classement hebdomadaire, du lundi au dimanche.
+Gestion des égalités au classement.
+Ajout d’amis par pseudonyme unique.
+Demandes d’amitié avec acceptation réciproque.
+Consultation de l’activité des amis acceptés.
+Encouragements prédéfinis, sans message libre.
+Notifications lors du franchissement de seuils de pas.
+Système anti-spam et heures silencieuses.
+Historique quotidien de l’activité.
+Suppression d’un ami ou blocage d’un utilisateur.
+Paramètres de confidentialité et de notifications.
+Suppression complète du compte.
+Fonctionnalités envisagées ultérieurement :
+
+badges et trophées ;
+niveaux et avatars évolutifs ;
+duels et équipes ;
+objectifs collectifs ;
+météo et ciel dynamiques ;
+Apple Watch ;
+dons.
+Type d’UX/UI/IX
+L’expérience recherchée est calme, aérienne et ludique.
+
+UX — expérience utilisateur
+Prise en main immédiate.
+Peu d’écrans et peu d’actions nécessaires.
+Information principale visible rapidement : pas, progression et classement.
+Compétition bienveillante, jamais culpabilisante.
+Partage des données clairement expliqué.
+États d’erreur, de chargement et d’absence de données compréhensibles.
+Accessibilité iOS : VoiceOver, Dynamic Type et réduction des animations.
+UI — interface visuelle
+Palette bleu clair et blanc.
+Univers inspiré du ciel, des nuages et de la lumière.
+Cartes arrondies et translucides.
+Effet liquid glass léger.
+Interface minimaliste et épurée.
+Illustrations douces plutôt que sportives ou agressives.
+Animations discrètes et non envahissantes.
+IX — expérience d’interaction
+Navigation principale simple : Accueil, Classement et Amis.
+Rafraîchissement naturel des données.
+Passage rapide entre classement quotidien et hebdomadaire.
+Ajout d’un ami par recherche exacte de son pseudonyme.
+Encouragement envoyé en une action.
+Retour immédiat après chaque interaction.
+Actions sensibles — blocage, suppression du compte — accompagnées d’une confirmation.
