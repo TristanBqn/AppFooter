@@ -17,10 +17,11 @@ export function Chip({ label, onPress, accessibilityLabel, accessibilityHint, di
   const reduced = useReducedMotion();
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? label}
+      role="button"
+      aria-label={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled, selected }}
+      aria-disabled={disabled}
+      aria-selected={selected}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
@@ -48,7 +49,7 @@ export type StatTileProps = {
 /** Petit indicateur chiffré (calories, rang du jour). */
 export function StatTile({ label, value, accessibilityLabel }: StatTileProps) {
   return (
-    <View style={styles.tile} accessible accessibilityLabel={accessibilityLabel ?? `${label}, ${value}`}>
+    <View style={styles.tile} accessible aria-label={accessibilityLabel ?? `${label}, ${value}`}>
       <AppText variant="footnote" color="textSecondary">
         {label}
       </AppText>

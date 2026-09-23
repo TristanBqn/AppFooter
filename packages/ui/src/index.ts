@@ -4,7 +4,7 @@
 export * from "./tokens";
 export * from "./color";
 export * from "./format";
-export { useReducedMotion, useReducedTransparency, useMotionDuration, announce } from "./a11y";
+export { useReducedMotion, useReducedTransparency, useMotionDuration, announce, nativeDriver } from "./a11y";
 
 export { AppText, textStyle, type AppTextProps } from "./components/AppText";
 export { SkyBackground, type SkyBackgroundProps } from "./components/SkyBackground";
@@ -30,3 +30,5 @@ export {
 } from "./components/States";
 export { ConfirmSheet, type ConfirmSheetProps } from "./components/ConfirmSheet";
 export { Toast, type ToastProps } from "./components/Toast";
+export { Illustration, Foot, LogoMarkShapes, LOGO_CLOUD, type IllustrationKind, type IllustrationProps } from "./components/Illustration";
+export { Logo, type LogoProps } from "./components/Logo";

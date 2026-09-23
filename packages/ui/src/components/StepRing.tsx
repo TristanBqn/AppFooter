@@ -1,11 +1,9 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Animated, StyleSheet, View, useWindowDimensions } from "react-native";
 import Svg, { Circle, Defs, LinearGradient, Stop } from "react-native-svg";
 import { useMotionDuration } from "../a11y";
 import { lightColors, space } from "../tokens";
 import { toPercent } from "../format";
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /** Au-delà de ce facteur Dynamic Type, le contenu central passe sous l'anneau. */
 export const LARGE_TEXT_SCALE = 1.3;
@@ -37,26 +35,38 @@ export function StepRing({
   const clamped = Math.min(1, Math.max(0, progress));
   const r = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * r;
+  // Valeur affichée pilotée par un état (et non une prop animée du SVG) pour fonctionner aussi sur le web.
+  const [shown, setShown] = useState(duration === 0 ? clamped : 0);
   const anim = useRef(new Animated.Value(duration === 0 ? clamped : 0)).current;
+
+  useEffect(() => {
+    const id = anim.addListener(({ value }) => setShown(value));
+    return () => anim.removeListener(id);
+  }, [anim]);
 
   useEffect(() => {
     if (duration === 0) {
       anim.setValue(clamped);
       return;
     }
-    Animated.timing(anim, { toValue: clamped, duration, useNativeDriver: false }).start();
+    const a = Animated.timing(anim, { toValue: clamped, duration, useNativeDriver: false });
+    a.start();
+    return () => a.stop();
   }, [anim, clamped, duration]);
 
-  const dashOffset = anim.interpolate({ inputRange: [0, 1], outputRange: [circumference, 0] });
+  const dashOffset = circumference * (1 - shown);
   const stacked = fontScale >= LARGE_TEXT_SCALE;
 
   return (
     <View
       style={styles.root}
       accessible
-      accessibilityRole="progressbar"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityValue={{ min: 0, max: 100, now: toPercent(clamped), text: accessibilityValueText }}
+      role="progressbar"
+      aria-label={accessibilityLabel}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={toPercent(clamped)}
+      aria-valuetext={accessibilityValueText}
     >
       <View style={{ width: size, height: size }}>
         <Svg width={size} height={size}>
@@ -67,7 +77,7 @@ export function StepRing({
             </LinearGradient>
           </Defs>
           <Circle cx={size / 2} cy={size / 2} r={r} stroke={lightColors.progressTrack} strokeWidth={strokeWidth} fill="none" />
-          <AnimatedCircle
+          <Circle
             cx={size / 2}
             cy={size / 2}
             r={r}

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
-import { announce, useMotionDuration } from "../a11y";
+import { announce, nativeDriver, useMotionDuration } from "../a11y";
 import { lightColors, radius, shadow, space } from "../tokens";
 import { AppText } from "./AppText";
 
@@ -27,9 +27,9 @@ export function Toast({ visible, message, tone = "success", onHide, durationMs =
   useEffect(() => {
     if (!visible) return;
     announce(message);
-    Animated.timing(opacity, { toValue: 1, duration, useNativeDriver: true }).start();
+    Animated.timing(opacity, { toValue: 1, duration, useNativeDriver: nativeDriver }).start();
     const timer = setTimeout(() => {
-      Animated.timing(opacity, { toValue: 0, duration, useNativeDriver: true }).start(() => onHide());
+      Animated.timing(opacity, { toValue: 0, duration, useNativeDriver: nativeDriver }).start(() => onHide());
     }, durationMs);
     return () => clearTimeout(timer);
   }, [visible, message, duration, durationMs, onHide, opacity]);
@@ -37,7 +37,7 @@ export function Toast({ visible, message, tone = "success", onHide, durationMs =
   if (!visible) return null;
   const c = toneColor[tone];
   return (
-    <View pointerEvents="none" style={styles.host}>
+    <View style={styles.host}>
       <Animated.View style={[styles.toast, { backgroundColor: c.bg, opacity }]}>
         <AppText variant="headline" color={c.fg} style={styles.text}>
           {message}
@@ -48,15 +48,12 @@ export function Toast({ visible, message, tone = "success", onHide, durationMs =
 }
 
 const styles = StyleSheet.create({
-  host: { position: "absolute", left: space[5], right: space[5], bottom: space[12], alignItems: "center" },
+  host: { pointerEvents: "none", position: "absolute", left: space[5], right: space[5], bottom: space[12], alignItems: "center" },
   toast: {
     borderRadius: radius.full,
     paddingVertical: space[3],
     paddingHorizontal: space[5],
-    shadowColor: shadow.float.color,
-    shadowOpacity: shadow.float.opacity,
-    shadowRadius: shadow.float.radius,
-    shadowOffset: { width: 0, height: shadow.float.offsetY },
+    boxShadow: shadow.float.css,
   },
   text: { textAlign: "center" },
 });

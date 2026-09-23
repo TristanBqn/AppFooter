@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native";
-import { useMotionDuration } from "../a11y";
+import { nativeDriver, useMotionDuration } from "../a11y";
 import { layout, lightColors, radius, shadow, space } from "../tokens";
 import { AppText } from "./AppText";
 
@@ -23,13 +23,13 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
   const x = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(x, { toValue: index * segment, duration, useNativeDriver: true }).start();
+    Animated.timing(x, { toValue: index * segment, duration, useNativeDriver: nativeDriver }).start();
   }, [x, index, segment, duration]);
 
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width - PAD * 2);
 
   return (
-    <View accessibilityRole="tablist" accessibilityLabel={accessibilityLabel} style={styles.root} onLayout={onLayout}>
+    <View role="tablist" aria-label={accessibilityLabel} style={styles.root} onLayout={onLayout}>
       {segment > 0 ? (
         <Animated.View style={[styles.thumb, { width: segment, transform: [{ translateX: x }] }]} />
       ) : null}
@@ -38,12 +38,12 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
         return (
           <Pressable
             key={o.value}
-            accessibilityRole="tab"
-            accessibilityLabel={o.label}
-            accessibilityState={{ selected }}
+            role="tab"
+            aria-label={o.label}
+            aria-selected={selected}
             accessibilityHint={`${i + 1} sur ${options.length}`}
             onPress={() => !selected && onChange(o.value)}
-            style={styles.segment}
+            style={[styles.segment, selected && segment === 0 ? styles.selectedStatic : null]}
           >
             <AppText variant="headline" color={selected ? "text" : "textSecondary"} maxFontSizeMultiplier={1.8} style={styles.label}>
               {o.label}
@@ -71,10 +71,7 @@ const styles = StyleSheet.create({
     left: PAD,
     borderRadius: radius.full,
     backgroundColor: lightColors.surface,
-    shadowColor: shadow.soft.color,
-    shadowOpacity: shadow.soft.opacity,
-    shadowRadius: shadow.soft.radius / 2,
-    shadowOffset: { width: 0, height: 2 },
+    boxShadow: shadow.subtle.css,
   },
   segment: {
     flex: 1,
@@ -83,5 +80,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: space[3],
   },
+  // Avant la mesure (premier rendu, rendu serveur) : fond direct sur le segment choisi.
+  selectedStatic: { backgroundColor: lightColors.surface, borderRadius: radius.full, boxShadow: shadow.subtle.css },
   label: { textAlign: "center" },
 });

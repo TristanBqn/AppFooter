@@ -1,5 +1,6 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { StyleSheet, TextInput, View, type TextInputProps } from "react-native";
+import { announce } from "../a11y";
 import { layout, lightColors, radius, space } from "../tokens";
 import { AppText, textStyle } from "./AppText";
 
@@ -20,9 +21,13 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
 ) {
   const [focused, setFocused] = useState(false);
   const note = error ?? helper;
+  // iOS n'a pas de région live : on annonce l'erreur dès qu'elle apparaît.
+  useEffect(() => {
+    if (error) announce(error);
+  }, [error]);
   return (
     <View style={styles.root}>
-      <AppText variant="subheadline" color="textSecondary" accessibilityElementsHidden importantForAccessibility="no">
+      <AppText variant="subheadline" color="textSecondary" aria-hidden>
         {label}
       </AppText>
       <View
@@ -35,9 +40,9 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
       >
         <TextInput
           ref={ref}
-          accessibilityLabel={label}
+          aria-label={label}
           accessibilityHint={note}
-          accessibilityState={{ disabled: !editable }}
+          aria-disabled={!editable}
           editable={editable}
           placeholderTextColor={lightColors.textSecondary}
           selectionColor={lightColors.accent}
@@ -58,7 +63,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
         <AppText
           variant="footnote"
           color={error ? "danger" : "textSecondary"}
-          accessibilityLiveRegion={error ? "polite" : undefined}
+          aria-live={error ? "polite" : undefined}
         >
           {note}
         </AppText>

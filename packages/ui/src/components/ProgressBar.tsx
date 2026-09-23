@@ -16,9 +16,12 @@ export function ProgressBar({ progress, accessibilityLabel, accessibilityValueTe
   return (
     <View
       accessible
-      accessibilityRole="progressbar"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityValue={{ min: 0, max: 100, now: toPercent(clamped), text: accessibilityValueText }}
+      role="progressbar"
+      aria-label={accessibilityLabel}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={toPercent(clamped)}
+      aria-valuetext={accessibilityValueText}
       style={[styles.track, { height }]}
     >
       {clamped > 0 ? (

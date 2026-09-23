@@ -29,8 +29,8 @@ export function RankRow({ rank, tied, name, steps, isMe = false, onPress }: Rank
   return (
     <Pressable
       accessible
-      accessibilityRole={onPress ? "button" : "text"}
-      accessibilityLabel={label}
+      role={onPress ? "button" : undefined}
+      aria-label={label}
       accessibilityHint={onPress ? "Ouvre son activité" : undefined}
       disabled={!onPress}
       onPress={onPress}

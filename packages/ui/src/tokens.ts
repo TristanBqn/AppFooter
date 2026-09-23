@@ -81,6 +81,7 @@ export const lightColors = {
   sun: palette.sun300,
   sunGlow: palette.sun100,
   cloud: "rgba(255, 255, 255, 0.9)",
+  cloudShade: palette.sky300,
 } as const;
 
 export type ColorToken = keyof typeof lightColors;
@@ -102,6 +103,12 @@ export const fontFamily = {
   text: "System",
   /** SF Pro Rounded : chiffres et titres. */
   rounded: "ui-rounded",
+} as const;
+
+/** Piles de repli pour l'aperçu web (react-native-web) : SF sur Safari/macOS, police système ailleurs. */
+export const fontFamilyWeb = {
+  text: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif',
+  rounded: 'ui-rounded, "SF Pro Rounded", -apple-system, system-ui, "Segoe UI", Roboto, sans-serif',
 } as const;
 
 type TextStyleToken = {
@@ -154,11 +161,15 @@ export const radius = {
   sm: 10, md: 16, lg: 24, xl: 32, full: 9999,
 } as const;
 
-/** Ombres très légères, teintées bleu nuit plutôt que noir. */
+/**
+ * Ombres très légères, teintées bleu nuit plutôt que noir. `css` alimente la propriété
+ * `boxShadow` (React Native nouvelle architecture, web et preset Tailwind).
+ */
 export const shadow = {
-  none: { color: palette.ink900, opacity: 0, radius: 0, offsetY: 0 },
-  soft: { color: palette.ink900, opacity: 0.06, radius: 16, offsetY: 6 },
-  float: { color: palette.ink900, opacity: 0.1, radius: 24, offsetY: 10 },
+  none: { opacity: 0, radius: 0, offsetY: 0, css: "none" },
+  subtle: { opacity: 0.06, radius: 8, offsetY: 2, css: "0px 2px 8px rgba(11, 37, 69, 0.06)" },
+  soft: { opacity: 0.06, radius: 16, offsetY: 6, css: "0px 6px 16px rgba(11, 37, 69, 0.06)" },
+  float: { opacity: 0.1, radius: 24, offsetY: 10, css: "0px 10px 24px rgba(11, 37, 69, 0.1)" },
 } as const;
 
 /** Intensité de flou `expo-blur` (0–100). Discret par principe. */

@@ -9,7 +9,7 @@ export function Monogram({ name, size = 40 }: MonogramProps) {
   const initial = name.trim().charAt(0).toUpperCase() || "?";
   return (
     <View
-      accessibilityElementsHidden
+      aria-hidden
       importantForAccessibility="no-hide-descendants"
       style={[styles.root, { width: size, height: size }]}
     >

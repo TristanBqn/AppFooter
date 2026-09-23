@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
-import { Text, type TextProps, type TextStyle } from "react-native";
-import { fontFamily, lightColors, typography, type ColorToken, type TypographyToken } from "../tokens";
+import { Platform, Text, type TextProps, type TextStyle } from "react-native";
+import { fontFamily, fontFamilyWeb, lightColors, typography, type ColorToken, type TypographyToken } from "../tokens";
 
 export function textStyle(variant: TypographyToken, color: ColorToken = "text"): TextStyle {
   const t = typography[variant];
   return {
-    fontFamily: fontFamily[t.family],
+    fontFamily: (Platform.OS === "web" ? fontFamilyWeb : fontFamily)[t.family],
     fontSize: t.fontSize,
     lineHeight: t.lineHeight,
     fontWeight: t.fontWeight,
@@ -27,7 +27,7 @@ export function AppText({ variant = "body", color = "text", style, maxFontSizeMu
   const isHeading = variant === "largeTitle" || variant === "title1" || variant === "title2";
   return (
     <Text
-      accessibilityRole={isHeading ? "header" : undefined}
+      role={isHeading ? "heading" : undefined}
       maxFontSizeMultiplier={maxFontSizeMultiplier ?? cap}
       style={[textStyle(variant, color), style]}
       {...rest}

@@ -30,8 +30,9 @@ export const footerPreset = {
       minHeight: { touch: `${layout.minTouch}px` },
       minWidth: { touch: `${layout.minTouch}px` },
       boxShadow: {
-        soft: `0 ${shadow.soft.offsetY}px ${shadow.soft.radius}px rgba(11, 37, 69, ${shadow.soft.opacity})`,
-        float: `0 ${shadow.float.offsetY}px ${shadow.float.radius}px rgba(11, 37, 69, ${shadow.float.opacity})`,
+        subtle: shadow.subtle.css,
+        soft: shadow.soft.css,
+        float: shadow.float.css,
       },
     },
   },

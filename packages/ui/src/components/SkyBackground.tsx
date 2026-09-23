@@ -20,7 +20,7 @@ export function SkyBackground({ variant = "sky", decorated = true, style, childr
     <View style={[styles.root, style]}>
       <LinearGradient colors={g.colors} locations={g.locations} style={StyleSheet.absoluteFill} />
       {decorated ? (
-        <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <View style={[StyleSheet.absoluteFill, styles.passThrough]} aria-hidden>
           <Svg width="100%" height={320} viewBox="0 0 390 320" preserveAspectRatio="xMidYMin slice">
             <Defs>
               <RadialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
@@ -45,4 +45,5 @@ export const CLOUD =
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: lightColors.background },
+  passThrough: { pointerEvents: "none" },
 });

@@ -48,7 +48,7 @@ export function ListRow({ title, subtitle, leading, titleColor = "text", value, 
         </AppText>
       ) : null}
       {onPress && !trailing ? (
-        <AppText variant="headline" color="textSecondary" accessibilityElementsHidden importantForAccessibility="no">
+        <AppText variant="headline" color="textSecondary" aria-hidden>
           ›
         </AppText>
       ) : null}
@@ -58,7 +58,7 @@ export function ListRow({ title, subtitle, leading, titleColor = "text", value, 
   if (trailing) {
     return (
       <View style={styles.row}>
-        <View style={styles.inline} accessible accessibilityLabel={[title, subtitle].filter(Boolean).join(", ")}>
+        <View style={styles.inline} accessible aria-label={[title, subtitle].filter(Boolean).join(", ")}>
           {leading}
           <RowText title={title} subtitle={subtitle} titleColor={titleColor} />
         </View>
@@ -69,7 +69,7 @@ export function ListRow({ title, subtitle, leading, titleColor = "text", value, 
 
   if (!onPress) {
     return (
-      <View style={styles.row} accessible accessibilityLabel={label}>
+      <View style={styles.row} accessible aria-label={label}>
         {content}
       </View>
     );
@@ -77,8 +77,8 @@ export function ListRow({ title, subtitle, leading, titleColor = "text", value, 
 
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
+      role="button"
+      aria-label={label}
       accessibilityHint={accessibilityHint}
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
@@ -99,17 +99,18 @@ export function SwitchRow({ title, subtitle, leading, titleColor = "text", value
   return (
     <View style={styles.row}>
       {leading}
-      <View style={styles.body} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={styles.body} aria-hidden>
         <RowText title={title} subtitle={subtitle} titleColor={titleColor} />
       </View>
       <Switch
-        accessibilityLabel={title}
+        aria-label={title}
         accessibilityHint={subtitle}
         value={value}
         onValueChange={onValueChange}
         disabled={disabled}
         trackColor={{ true: lightColors.accent, false: lightColors.progressTrack }}
         ios_backgroundColor={lightColors.progressTrack}
+        thumbColor={lightColors.surface}
       />
     </View>
   );

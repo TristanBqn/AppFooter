@@ -49,10 +49,11 @@ export function Button({
   const fg: ColorToken = disabled ? "textSecondary" : p.fg;
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? label}
+      role="button"
+      aria-label={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: inactive, busy: loading }}
+      aria-disabled={inactive}
+      aria-busy={loading}
       disabled={inactive}
       onPress={onPress}
       testID={testID}
@@ -66,11 +67,11 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={lightColors[fg]} accessibilityElementsHidden />
+        <ActivityIndicator color={lightColors[fg]} aria-hidden />
       ) : (
         <View style={styles.content}>
           {icon ? (
-            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <View aria-hidden>
               {icon}
             </View>
           ) : null}

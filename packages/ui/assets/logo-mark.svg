@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Footer – symbole (fond transparent, pour fonds clairs)</title>
+  <defs>
+    <g id="foot">
+      <path d="M11 0C17.5 0 21.5 5.5 21.5 13C21.5 19.5 18.5 23.5 18.5 29.5C18.5 35.5 15 40 10 40C5 40 2.5 35.5 2.5 30.5C2.5 24.5 0.5 19.5 0.5 12.5C0.5 5 4.5 0 11 0Z"/>
+      <circle cx="4.6" cy="-4.6" r="3.4"/>
+      <circle cx="10.4" cy="-6.6" r="2.7"/>
+      <circle cx="15.2" cy="-5.8" r="2.3"/>
+      <circle cx="19" cy="-3.4" r="2"/>
+      <circle cx="21.8" cy="0.2" r="1.7"/>
+    </g>
+  </defs>
+  <circle cx="760" cy="250" r="92" fill="#FFE08A"/>
+  <path fill="#D6EBFF" d="M232 780a150 150 0 0 1-18-299a190 190 0 0 1 360-86a150 150 0 0 1 250 70a130 130 0 0 1 -14 315z"/>
+  <g fill="#1859B0">
+    <use href="#foot" transform="translate(380 585) rotate(-14) scale(-5.6 5.6) translate(-11 -16)"/>
+    <use href="#foot" transform="translate(592 525) rotate(-14) scale(5.6) translate(-11 -16)"/>
+  </g>
+</svg>

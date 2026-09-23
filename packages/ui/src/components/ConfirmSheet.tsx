@@ -38,12 +38,12 @@ export function ConfirmSheet({
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={onCancel}
-          accessibilityRole="button"
-          accessibilityLabel="Fermer sans rien changer"
+          role="button"
+          aria-label="Fermer sans rien changer"
         />
-        <GlassCard tone="strong" style={styles.sheet} accessibilityViewIsModal>
-          <View style={styles.grabber} accessibilityElementsHidden />
-          <AppText variant="title3" accessibilityRole="header">
+        <GlassCard tone="strong" style={styles.sheet} aria-modal>
+          <View style={styles.grabber} aria-hidden />
+          <AppText variant="title3" role="heading">
             {title}
           </AppText>
           <AppText variant="callout" color="textSecondary" style={styles.message}>

@@ -1,11 +1,10 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Animated, StyleSheet, View, type DimensionValue } from "react-native";
-import Svg, { Circle, Path } from "react-native-svg";
-import { useReducedMotion } from "../a11y";
+import { nativeDriver, useReducedMotion } from "../a11y";
 import { lightColors, motion, radius, space } from "../tokens";
 import { AppText } from "./AppText";
 import { Button } from "./Button";
-import { CLOUD } from "./SkyBackground";
+import { Illustration, type IllustrationKind } from "./Illustration";
 
 export type SkeletonProps = { width?: DimensionValue; height?: number; rounded?: boolean };
 
@@ -20,8 +19,8 @@ export function Skeleton({ width = "100%", height = 16, rounded = false }: Skele
     }
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 1, duration: motion.duration.celebrate, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.6, duration: motion.duration.celebrate, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: motion.duration.celebrate, useNativeDriver: nativeDriver }),
+        Animated.timing(opacity, { toValue: 0.6, duration: motion.duration.celebrate, useNativeDriver: nativeDriver }),
       ]),
     );
     loop.start();
@@ -29,7 +28,7 @@ export function Skeleton({ width = "100%", height = 16, rounded = false }: Skele
   }, [opacity, reduced]);
   return (
     <Animated.View
-      accessibilityElementsHidden
+      aria-hidden
       importantForAccessibility="no-hide-descendants"
       style={{ width, height, opacity, borderRadius: rounded ? radius.full : radius.sm, backgroundColor: lightColors.progressTrack }}
     />
@@ -45,7 +44,7 @@ export type LoadingStateProps = {
 
 export function LoadingState({ accessibilityLabel, children }: LoadingStateProps) {
   return (
-    <View accessible accessibilityLabel={accessibilityLabel} accessibilityState={{ busy: true }} style={styles.loading}>
+    <View accessible aria-label={accessibilityLabel} aria-busy style={styles.loading}>
       {children ?? (
         <>
           <Skeleton height={24} width="60%" />
@@ -63,15 +62,15 @@ export type EmptyStateProps = {
   title: string;
   message?: string;
   action?: Action;
-  illustration?: "cloud" | "sun";
+  illustration?: IllustrationKind;
 };
 
 /** Absence de données : rassurant, une seule action. */
-export function EmptyState({ title, message, action, illustration = "cloud" }: EmptyStateProps) {
+export function EmptyState({ title, message, action, illustration = "calm" }: EmptyStateProps) {
   return (
     <View style={styles.center}>
       <Illustration kind={illustration} />
-      <AppText variant="title3" style={styles.centerText} accessibilityRole="header">
+      <AppText variant="title3" style={styles.centerText} role="heading">
         {title}
       </AppText>
       {message ? (
@@ -94,27 +93,15 @@ export type ErrorStateProps = {
 
 export function ErrorState({ title = "Petit nuage sur la connexion", message, onRetry, retrying }: ErrorStateProps) {
   return (
-    <View style={styles.center} accessibilityLiveRegion="polite">
-      <Illustration kind="cloud" />
-      <AppText variant="title3" style={styles.centerText} accessibilityRole="header">
+    <View style={styles.center} aria-live="polite">
+      <Illustration kind="offline" />
+      <AppText variant="title3" style={styles.centerText} role="heading">
         {title}
       </AppText>
       <AppText variant="callout" color="textSecondary" style={styles.centerText}>
         {message}
       </AppText>
       {onRetry ? <Button label="Réessayer" variant="secondary" onPress={onRetry} loading={retrying} style={styles.action} /> : null}
-    </View>
-  );
-}
-
-function Illustration({ kind }: { kind: "cloud" | "sun" }) {
-  return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Svg width={160} height={96} viewBox="0 0 160 96">
-        {kind === "sun" ? <Circle cx={112} cy={32} r={26} fill={lightColors.sun} /> : null}
-        <Path d={CLOUD} fill={lightColors.surface} transform="translate(10 30)" />
-        <Path d={CLOUD} fill={lightColors.accentSoft} opacity={0.6} transform="translate(60 56) scale(0.4)" />
-      </Svg>
     </View>
   );
 }

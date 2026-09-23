@@ -50,7 +50,7 @@ Règle : aucun texte gris clair, aucun texte posé directement sur un nuage déc
 |---|---|---|
 | Chargement initial | `LoadingState` + `Skeleton` à la forme du contenu | Libellé VoiceOver « Chargement de … ». Au-delà de 10 s : passer en erreur. |
 | Rafraîchissement | `RefreshControl` | Contenu précédent conservé. |
-| Vide | `EmptyState` (illustration nuage ou soleil, 1 action max) | Rassurant, propose l'étape suivante. |
+| Vide | `EmptyState` (`illustration` : `sunrise`, `together`, `privacy`, `calm`, `offline`, `farewell` ; 1 action max) | Rassurant, propose l'étape suivante. |
 | Erreur | `ErrorState` + « Réessayer » | Dit quoi faire. Si des données en cache existent : les afficher + bandeau discret « Dernière mise à jour à 14 h 05 ». |
 
 ---
@@ -63,9 +63,9 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
 
 | Page | Illustration | Titre (`title1`) | Texte (`callout`) | Action |
 |---|---|---|---|---|
-| 1 | Soleil qui se lève, nuages | Marche, tout simplement | Footer compte tes pas et te propose une petite compétition amicale avec tes proches. | Continuer |
-| 2 | Deux nuages côte à côte | Entre proches, sans pression | Tu ne vois que tes amis, et eux ne voient que toi. Pas de classement public. | Continuer |
-| 3 | Nuage + cœur léger | Ce que Footer utilise | voir ci-dessous | J'accepte et je continue |
+| 1 | `Illustration sunrise` | Marche, tout simplement | Footer compte tes pas et te propose une petite compétition amicale avec tes proches. | Continuer |
+| 2 | `Illustration together` | Entre proches, sans pression | Tu ne vois que tes amis, et eux ne voient que toi. Pas de classement public. | Continuer |
+| 3 | `Illustration privacy` | Ce que Footer utilise | voir ci-dessous | J'accepte et je continue |
 
 **Page 3 : consentement santé (écran dédié, séparé des CGU)**
 - `GlassCard` avec liste à puces :
@@ -83,7 +83,7 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
 
 ## 2. Connexion avec Apple
 
-- Fond `dawn`, logo Footer (nuage + empreinte de pas arrondie) centré, titre `largeTitle` « Footer », sous-titre « Marche un peu plus, ensemble. »
+- Fond `dawn`, `Logo` centré (symbole nuage + deux pas, mot « Footer » en `largeTitle` ; VoiceOver « Footer »), sous-titre « Marche un peu plus, ensemble. »
 - Bouton **Sign in with Apple** natif (`expo-apple-authentication`, style noir ou blanc imposé par Apple : **blanc avec contour** pour rester dans la palette ; hauteur 52, rayon 26). C'est l'action principale unique.
 - Mention `footnote` : « En continuant, tu acceptes les conditions d'utilisation et la politique de confidentialité. » (liens).
 - Hors production uniquement : bouton `ghost` « Connexion de développement » sous un séparateur, libellé préfixé « DEV ».
@@ -117,7 +117,8 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
    - Franchissement d'un seuil pendant que l'écran est ouvert : léger halo soleil autour de l'anneau (`celebrate`, 900 ms) + annonce « Palier de 10 000 pas franchi ». Aucun effet si animations réduites (annonce conservée).
 3. **Carte indicateurs** : deux `StatTile` côte à côte (empilés en grand texte) : « Calories actives » / « 312 kcal » ; « Rang du jour » / « 2e sur 5 » (ou « 2e ex æquo »). Toucher la tuile rang → onglet Classement. Sans ami : tuile « Rang du jour » remplacée par « Amis » / « Ajoute un ami » (→ onglet Amis).
 4. **Carte « prochain ami »** (`ListRow` pressable + `Monogram`) : « Encore 1 201 pas » / « pour dépasser lea » → Classement. Si je suis 1er seul : « Tu mènes la journée » / « Profite de ta balade ». Si 1er ex æquo : « Tu partages la tête avec sam.b ». Masquée sans ami.
-5. **Lien historique** : `ListRow` « Tes 30 derniers jours » → Historique.
+5. **Encouragements reçus** (carte visible s'il y en a aujourd'hui) : `ListRow` + `Monogram` « lea » / « Bravo pour ta marche ! » (3 derniers) ; lien `ghost` « Tout voir » → liste des encouragements reçus (7 derniers jours, même format, état vide `calm` « Aucun encouragement pour l'instant. Et si tu en envoyais un ? »).
+6. **Lien historique** : `ListRow` « Tes 30 derniers jours » → Historique.
 
 **États**
 - Chargement : squelette anneau (cercle `Skeleton` 240) + 2 tuiles. VoiceOver « Chargement de ton activité ».
@@ -137,7 +138,7 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
 
 **États**
 - Chargement : 5 lignes squelette. VoiceOver « Chargement du classement ».
-- Vide (aucun ami accepté) : `EmptyState` nuage « Le classement se remplit avec tes amis » / « Ajoute un proche avec son pseudo pour marcher ensemble. » / action « Ajouter un ami » (→ Amis, champ focalisé). Ma propre ligne reste affichée au-dessus.
+- Vide (aucun ami accepté) : `EmptyState` `together` « Le classement se remplit avec tes amis » / « Ajoute un proche avec son pseudo pour marcher ensemble. » / action « Ajouter un ami » (→ Amis, champ focalisé). Ma propre ligne reste affichée au-dessus.
 - Tout le monde à 0 (début de journée) : liste normale, tous « 1er ex æquo », bandeau « La journée commence pour tout le monde. »
 - Erreur : `ErrorState` « Le classement n'a pas pu se charger. Vérifie ta connexion puis réessaie. »
 
@@ -145,10 +146,10 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
 
 1. `largeTitle` « Amis ».
 2. **Ajouter un ami** (`GlassCard`) : `TextField` « Pseudo de ton ami » (minuscules, sans correction), `trailing` bouton compact `primary` « Ajouter » (action principale de l'écran). Aide : « Tape son pseudo exact. » Pas de suggestions ni d'autocomplétion.
-   - Succès : champ vidé, `Toast` « Demande envoyée à {pseudo} », la demande apparaît dans « Envoyées ».
-   - Pseudo inconnu **ou** bloqué (réponse neutre CA7) : erreur champ « Aucun compte ne correspond à ce pseudo. Vérifie l'orthographe exacte. »
-   - Déjà ami / demande déjà envoyée : « Tu es déjà ami avec {pseudo}. » / « Ta demande à {pseudo} est déjà en attente. »
-   - Demandes désactivées chez l'autre : même message neutre que « inconnu » (à confirmer avec le contrat).
+   - Réponse de l'API toujours neutre (ADR 005, `202 requested`) : champ vidé, `Toast` « Demande envoyée si ce pseudo existe », liste « Envoyées » rafraîchie. Aucun message ne distingue pseudo inconnu, bloquant ou demandes désactivées.
+   - Vérifications locales avant envoi (sans appel réseau, donc sans énumération) : pseudo déjà dans « Mes amis » → erreur champ « {pseudo} fait déjà partie de tes amis. » ; déjà dans « Envoyées » → « Ta demande à {pseudo} est déjà en attente. » ; mon propre pseudo → « C'est ton propre pseudo. »
+   - `409 TARGET_BLOCKED` (c'est moi qui bloque) : « Tu as bloqué {pseudo}. Débloque ce compte dans Paramètres > Comptes bloqués pour l'ajouter. »
+   - `429` : « Tu as envoyé beaucoup de demandes aujourd'hui. Réessaie demain. » ; format invalide : message de format du §3.
 3. **Demandes reçues** (section visible s'il y en a, en premier) : `ListRow` + `Monogram`, `trailing` : `Button compact secondary` « Accepter » et `ghost` « Refuser » (VoiceOver « Accepter la demande de lea »). Retour optimiste : la ligne glisse vers « Mes amis » (fondu si animations réduites) + `Toast` « lea fait maintenant partie de tes amis ». Refus : ligne retirée, sans toast culpabilisant (annonce VoiceOver « Demande refusée »).
 4. **Demandes envoyées** : `ListRow` « {pseudo} » / « En attente », `trailing` `ghost` « Annuler ».
 5. **Mes amis** : `ListRow` pressable, `Monogram`, titre pseudo, sous-titre « 8 450 pas aujourd'hui » → Profil ami. Tri alphabétique.
@@ -181,13 +182,13 @@ Push depuis l'Accueil. Titre « Ton historique ».
 2. **Liste** : 30 `ListRow` (jour récent en haut) : titre « Jeudi 24 sept. », valeur « 8 450 pas », sous-titre « 312 kcal » ; `ProgressBar` fine sous chaque ligne (relative au meilleur jour). Seuil de 10 000 franchi : petite pastille soleil décorative (VoiceOver : « palier de 10 000 franchi »).
 3. Jours sans donnée : « Pas de données » en `textSecondary` (pas « 0 pas » si Santé n'a rien renvoyé).
 
-**États** : chargement (8 lignes squelette) ; vide « Ton historique se construit jour après jour » ; erreur standard.
+**États** : chargement (8 lignes squelette) ; vide (`calm`) « Ton historique se construit jour après jour » ; erreur standard.
 
 ## 9. Paramètres
 
 Push depuis l'engrenage de l'Accueil. Titre « Paramètres ». Liste groupée en `GlassCard`, sections avec en-tête `footnote` majuscules.
 
-**Mon compte** : `ListRow` « Pseudo » / valeur « tom » (lecture seule en V1).
+**Mon compte** : `ListRow` « Pseudo » / valeur « tom » (lecture seule en V1) ; `ListRow` « Se déconnecter » (couleur `accentText`, sans confirmation : action réversible).
 
 **Confidentialité**
 - `SwitchRow` « Afficher mes calories à mes amis » / « Tes amis voient seulement tes pas si c'est désactivé. »
@@ -202,6 +203,8 @@ Push depuis l'engrenage de l'Accueil. Titre « Paramètres ». Liste groupée en
 
 **Apple Santé** : `ListRow` « Accès à Apple Santé » / « Connecté » ou « Non autorisé » → Réglages iOS.
 
+**Comptes bloqués** : `ListRow` « Comptes bloqués » / valeur « 2 » → liste (`ListRow` pseudo + `trailing` `ghost` « Débloquer » ; déblocage sans confirmation, `Toast` « {pseudo} est débloqué. Tu peux de nouveau l'ajouter. »). Vide (`calm`) : « Tu n'as bloqué personne. »
+
 **Zone sensible** (carte séparée, en bas) : `ListRow` titre couleur `danger` « Supprimer mon compte » → écran 10. Pied : version de l'app (`footnote`).
 
 Chaque bascule est optimiste ; échec → retour à l'état précédent + `Toast error` « Réglage non enregistré. Vérifie ta connexion puis réessaie. »
@@ -210,7 +213,7 @@ Chaque bascule est optimiste ; échec → retour à l'état précédent + `Toast
 
 Push depuis Paramètres. Titre « Supprimer mon compte ».
 
-1. Illustration nuage qui s'éloigne (décorative).
+1. `Illustration farewell` (nuages qui s'éloignent, décorative).
 2. Texte : « Nous allons effacer définitivement ton compte, ton pseudo, ton historique, tes amis et tes encouragements. Ta connexion Apple sera révoquée. Tes données dans Apple Santé ne sont pas touchées. »
 3. Bouton `destructive` « Supprimer mon compte » (action unique) → `ConfirmSheet` : titre « Tout effacer définitivement ? » ; message « Cette action est irréversible. » ; « Supprimer définitivement » / « Annuler ».
 4. Pendant la suppression : bouton en `loading`, retour arrière bloqué.
@@ -219,9 +222,24 @@ Push depuis Paramètres. Titre « Supprimer mon compte ».
 
 ---
 
+## 11. Identité : icône, logo, illustrations (D4)
+
+| Fichier (`packages/ui/assets/`) | Usage | Format |
+|---|---|---|
+| `icon.png` | `expo.icon` (iOS) | 1024 × 1024, RVB **sans** transparence, coins carrés (iOS applique le masque) |
+| `splash-icon.png` | plugin `expo-splash-screen` : `image`, `imageWidth: 200`, `backgroundColor: "#EEF7FF"` | 1024 × 1024, fond transparent |
+| `favicon.png` | `expo.web.favicon` (aperçu web) | 48 × 48 |
+| `icon.svg`, `logo-mark.svg` | sources vectorielles | SVG |
+
+- Chemins depuis `apps/mobile/app.json` : `"../../packages/ui/assets/icon.png"` etc.
+- **Icône** : ciel `sky400 → sky100`, soleil `sun`, nuage blanc, deux empreintes `accent` qui avancent. Lisible à 29 pt (vérifié à 60 px).
+- **Logo** (`Logo`, React Native) : même symbole avec nuage `accentSoft` pour fonds clairs, mot « Footer » en SF Pro Rounded gras. Écran de connexion uniquement.
+- **Illustrations** (`Illustration kind`, 200 × 120, décoratives) : `sunrise` (onboarding 1, Santé non connectée), `together` (onboarding 2, amis/classement vides), `privacy` (consentement), `calm` (vides génériques, historique), `offline` (erreurs), `farewell` (suppression du compte).
+- Revue visuelle web : `pnpm --filter @app/ui gallery` construit la galerie des composants avec react-native-web et écrit `docs/design/review/gallery*.png` (normal, feuille ouverte, animations réduites).
+
 ## Points ouverts
 1. **Ordre consentement / connexion** : (A) consentement après connexion (retenu : horodatage serveur possible) ; (B) avant connexion (stocké localement puis transmis). À trancher par le lead.
 2. ~~Catalogue et seuils~~ : réglé (`ENCOURAGEMENT_CATALOG`, `STEP_MILESTONES`, `encouragedToday` dans `@app/contracts`). `encouragedToday` n'est pas sur les entrées du classement : non nécessaire, le profil ami le lit depuis GET /friends.
-3. **Demandes désactivées chez le destinataire** : réponse neutre identique à « inconnu » proposée (cohérent CA7).
-4. **Logo** : proposition « nuage + empreinte arrondie », à dessiner en phase 2 si validé.
+3. ~~Demandes désactivées~~ : réglé par l'ADR 005 (réponse 202 neutre, demande cachée).
+4. ~~Logo~~ : livré (D4), voir §11.
 5. Dépendances à prévoir côté mobile : `expo-blur`, `expo-linear-gradient`, `react-native-svg` (peer deps de `@app/ui`), `expo-symbols`, `expo-haptics`, `expo-apple-authentication`, `react-native-safe-area-context` (marges des feuilles et toasts).

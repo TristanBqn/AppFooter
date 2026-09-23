@@ -40,10 +40,7 @@ export function GlassCard({ tone = "card", padded = true, style, children, ...re
 const styles = StyleSheet.create({
   shadow: {
     borderRadius: radius.lg,
-    shadowColor: shadow.soft.color,
-    shadowOpacity: shadow.soft.opacity,
-    shadowRadius: shadow.soft.radius,
-    shadowOffset: { width: 0, height: shadow.soft.offsetY },
+    boxShadow: shadow.soft.css,
   },
   clip: {
     borderRadius: radius.lg,
