@@ -11,3 +11,4 @@ test-results/
 .env.*
 !.env.example
 .data/
+apps/api/drizzle/

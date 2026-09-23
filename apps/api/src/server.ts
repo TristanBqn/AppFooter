@@ -6,7 +6,8 @@ import { createApp } from "./app";
 import { loadEnv } from "./env";
 
 const env = loadEnv();
-const { db, close } = await createDb(env.databaseUrl);
+const { db, migrate, close } = await createDb(env.databaseUrl);
+await migrate();
 const app = createApp({ db });
 
 const server = serve({ fetch: app.fetch, port: env.apiPort }, (info) => {
