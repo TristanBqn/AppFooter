@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" font-family="'SF Pro Rounded', ui-rounded, -apple-system, 'Segoe UI', system-ui, sans-serif">
+  <title>Footer – Classement quotidien avec égalité (référence)</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#BFDFFF"/>
+      <stop offset="0.35" stop-color="#D6EBFF"/>
+      <stop offset="0.7" stop-color="#EEF7FF"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#0B2545" flood-opacity="0.06"/>
+    </filter>
+    <filter id="thumb" x="-20%" y="-40%" width="140%" height="180%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0B2545" flood-opacity="0.06"/>
+    </filter>
+    <path id="cloud" d="M30 60a30 30 0 0 1 0-60c8 0 15 3 20 8a38 38 0 0 1 68 6a24 24 0 0 1 12-3a24 24 0 0 1 0 49z"/>
+  </defs>
+
+  <rect width="390" height="844" fill="url(#sky)"/>
+  <use href="#cloud" fill="#FFFFFF" opacity="0.6" transform="translate(230 40) scale(0.9)"/>
+
+  <text x="32" y="34" font-size="16" font-weight="600" fill="#0B2545">9:41</text>
+  <text x="20" y="104" font-size="34" font-weight="700" fill="#0B2545">Classement</text>
+
+  <!-- Bascule quotidien / hebdo -->
+  <rect x="20" y="124" width="350" height="52" rx="26" fill="#1859B0" fill-opacity="0.14"/>
+  <rect x="24" y="128" width="171" height="44" rx="22" fill="#FFFFFF" filter="url(#thumb)"/>
+  <text x="109.5" y="156" text-anchor="middle" font-size="17" font-weight="600" fill="#0B2545">Aujourd'hui</text>
+  <text x="280.5" y="156" text-anchor="middle" font-size="17" font-weight="600" fill="#3A5578">Cette semaine</text>
+
+  <text x="20" y="208" font-size="15" fill="#3A5578">Jeudi 24 septembre · toi et 4 amis</text>
+
+  <!-- Message bienveillant -->
+  <g filter="url(#soft)">
+    <rect x="20" y="224" width="350" height="64" rx="24" fill="#FFF6DB" fill-opacity="0.9" stroke="#FFFFFF" stroke-opacity="0.85"/>
+  </g>
+  <circle cx="50" cy="256" r="10" fill="#FFE08A"/>
+  <text x="72" y="262" font-size="17" font-weight="600" fill="#0B2545">Encore 1 201 pas pour dépasser lea</text>
+
+  <!-- Liste -->
+  <g filter="url(#soft)">
+    <rect x="20" y="304" width="350" height="372" rx="24" fill="#FFFFFF" fill-opacity="0.62" stroke="#FFFFFF" stroke-opacity="0.85"/>
+  </g>
+
+  <g font-size="17">
+    <!-- 1er -->
+    <rect x="44" y="330" width="40" height="26" rx="13" fill="#FFE08A"/>
+    <text x="64" y="348" text-anchor="middle" font-size="15" font-weight="600" fill="#0B2545">1er</text>
+    <circle cx="112" cy="343" r="20" fill="#D6EBFF"/><text x="112" y="349" text-anchor="middle" font-weight="600" fill="#1859B0">L</text>
+    <text x="144" y="349" font-weight="600" fill="#0B2545">lea</text>
+    <text x="350" y="349" text-anchor="end" font-size="20" font-weight="600" fill="#0B2545">9 650 pas</text>
+    <line x1="44" y1="378" x2="346" y2="378" stroke="#0B2545" stroke-opacity="0.08"/>
+
+    <!-- 2e ex aequo : moi -->
+    <rect x="28" y="384" width="334" height="68" rx="16" fill="#2F7BDD" fill-opacity="0.10"/>
+    <text x="64" y="416" text-anchor="middle" font-size="15" font-weight="600" fill="#0B2545">2e</text>
+    <text x="64" y="433" text-anchor="middle" font-size="12" font-weight="500" fill="#3A5578">ex æquo</text>
+    <circle cx="112" cy="418" r="20" fill="#D6EBFF"/><text x="112" y="424" text-anchor="middle" font-weight="600" fill="#1859B0">T</text>
+    <text x="144" y="424" font-weight="600" fill="#0B2545">tom</text>
+    <rect x="180" y="408" width="34" height="20" rx="10" fill="#FFFFFF"/><text x="197" y="422" text-anchor="middle" font-size="12" font-weight="500" fill="#1859B0">toi</text>
+    <text x="350" y="424" text-anchor="end" font-size="20" font-weight="600" fill="#1859B0">8 450 pas</text>
+
+    <!-- 2e ex aequo -->
+    <text x="64" y="488" text-anchor="middle" font-size="15" font-weight="600" fill="#0B2545">2e</text>
+    <text x="64" y="505" text-anchor="middle" font-size="12" font-weight="500" fill="#3A5578">ex æquo</text>
+    <circle cx="112" cy="490" r="20" fill="#D6EBFF"/><text x="112" y="496" text-anchor="middle" font-weight="600" fill="#1859B0">S</text>
+    <text x="144" y="496" font-weight="600" fill="#0B2545">sam.b</text>
+    <text x="350" y="496" text-anchor="end" font-size="20" font-weight="600" fill="#0B2545">8 450 pas</text>
+    <line x1="44" y1="526" x2="346" y2="526" stroke="#0B2545" stroke-opacity="0.08"/>
+
+    <!-- 4e : le rang 3 est sauté -->
+    <text x="64" y="568" text-anchor="middle" font-size="15" font-weight="600" fill="#0B2545">4e</text>
+    <circle cx="112" cy="562" r="20" fill="#D6EBFF"/><text x="112" y="568" text-anchor="middle" font-weight="600" fill="#1859B0">M</text>
+    <text x="144" y="568" font-weight="600" fill="#0B2545">marc_d</text>
+    <text x="350" y="568" text-anchor="end" font-size="20" font-weight="600" fill="#0B2545">6 120 pas</text>
+    <line x1="44" y1="598" x2="346" y2="598" stroke="#0B2545" stroke-opacity="0.08"/>
+
+    <text x="64" y="640" text-anchor="middle" font-size="15" font-weight="600" fill="#0B2545">5e</text>
+    <circle cx="112" cy="634" r="20" fill="#D6EBFF"/><text x="112" y="640" text-anchor="middle" font-weight="600" fill="#1859B0">N</text>
+    <text x="144" y="640" font-weight="600" fill="#0B2545">nina</text>
+    <text x="350" y="640" text-anchor="end" font-size="20" font-weight="600" fill="#0B2545">3 050 pas</text>
+  </g>
+
+  <text x="195" y="708" text-anchor="middle" font-size="13" fill="#3A5578">Tire vers le bas pour actualiser</text>
+
+  <!-- Barre d'onglets -->
+  <rect x="0" y="760" width="390" height="84" fill="#FFFFFF" fill-opacity="0.78"/>
+  <line x1="0" y1="760" x2="390" y2="760" stroke="#0B2545" stroke-opacity="0.1"/>
+  <g font-size="11" font-weight="500" text-anchor="middle">
+    <g transform="translate(65 0)" fill="none" stroke="#3A5578" stroke-width="2" stroke-linejoin="round">
+      <path d="M-11 790l11-9 11 9v10h-7v-6h-8v6h-7z"/>
+      <text y="818" fill="#3A5578" stroke="none">Accueil</text>
+    </g>
+    <g transform="translate(195 0)" fill="none" stroke="#1859B0" stroke-width="3" stroke-linecap="round">
+      <path d="M-9 800v-8M0 800v-16M9 800v-11"/>
+      <text y="818" fill="#1859B0" stroke="none">Classement</text>
+    </g>
+    <g transform="translate(325 0)" fill="none" stroke="#3A5578" stroke-width="2">
+      <circle cx="-5" cy="787" r="4"/><circle cx="6" cy="789" r="3"/>
+      <path d="M-13 800a8 7 0 0 1 16 0M2 800a6 5 0 0 1 11 0" stroke-linecap="round"/>
+      <text y="818" fill="#3A5578" stroke="none">Amis</text>
+    </g>
+  </g>
+</svg>

@@ -4,8 +4,31 @@
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens": "./src/tokens.ts",
+    "./color": "./src/color.ts",
+    "./format": "./src/format.ts",
+    "./tailwind-preset": "./src/tailwind-preset.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "check": "tsc --noEmit && vitest run"
+  },
+  "peerDependencies": {
+    "react": ">=19.1",
+    "react-native": ">=0.81",
+    "expo-blur": ">=15",
+    "expo-linear-gradient": ">=15",
+    "react-native-svg": ">=15"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.18",
+    "expo-blur": "~57.0.3",
+    "expo-linear-gradient": "~57.0.2",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-svg": "15.15.4"
   }
 }
