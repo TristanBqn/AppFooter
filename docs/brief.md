@@ -36,13 +36,13 @@ Particuliers possédant un iPhone, qui veulent se motiver avec famille et amis, 
 Badges, trophées, niveaux, avatars évolutifs, duels, équipes, objectifs collectifs, météo et ciel dynamiques, Apple Watch, dons, messages libres, web, Android, mode sombre, multilingue, paiement.
 
 ## Critères d'acceptation (testables)
-- CA1 : sans session valide, toute route hors `/auth/*` et `/health` renvoie 401.
+- CA1 : sans session valide, toute route hors `/auth/*`, `/health` et `/privacy` renvoie 401.
 - CA2 : un pseudonyme déjà pris (insensible à la casse) est refusé ; format 3–20 caractères `[a-z0-9_.]`.
 - CA3 : une synchro envoie des totaux quotidiens ; renvoyer le même jour remplace la valeur (idempotent), pas de doublon.
 - CA4 : l'adaptateur HealthKit ignore les échantillons `HKWasUserEntered = true` (test unitaire sur l'agrégation).
 - CA5 : le classement quotidien ne contient que moi et mes amis acceptés ; totaux égaux ⇒ même rang, rang suivant sauté.
 - CA6 : le classement hebdomadaire agrège exactement lundi → dimanche.
-- CA7 : l'ajout d'ami exige le pseudonyme exact ; un pseudo inconnu ou qui m'a bloqué renvoie la même réponse neutre (pas d'énumération).
+- CA7 : l'ajout d'ami exige le pseudonyme exact ; une demande vers un utilisateur qui m'a bloqué ou qui a refusé ma demande reçoit exactement la même réponse qu'une demande normale (demande « cachée », ADR 005). L'existence d'un pseudo reste détectable, comme déjà permis par CA2.
 - CA8 : l'activité d'un utilisateur n'est lisible que par lui et ses amis acceptés ; calories masquées si le paramètre le demande.
 - CA9 : un 2ᵉ encouragement au même ami le même jour est refusé (429) ; aucun texte libre accepté par l'API.
 - CA10 : aucune notification non urgente n'est émise pendant les heures silencieuses du destinataire.
