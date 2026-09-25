@@ -7,7 +7,7 @@
 ## 0. Règles communes
 
 ### Structure
-- Fond : `SkyBackground` (`sky` pour les onglets, `dawn` pour onboarding et états vides). Décor masqué à VoiceOver.
+- Fond : `SkyBackground` (`sky` pour les onglets, `dawn` pour onboarding et états vides). Décor masqué à VoiceOver ; nuages confinés à la bande de la barre d'état (0–44 pt), jamais sous un texte.
 - Contenu en `GlassCard` (rayon 24, voile blanc 62 %, flou 30, ombre `soft`). Marge d'écran 20 pt, 16 pt entre cartes, 20 pt de padding interne.
 - Titres d'onglet en `largeTitle` (grand titre iOS, rétréci au défilement). Un seul titre `header` par écran.
 - **Une seule action principale** (`Button` `primary`) par écran au maximum ; les autres en `secondary` ou `ghost`.
@@ -48,9 +48,9 @@ Règle : aucun texte gris clair, aucun texte posé directement sur un nuage déc
 ### Squelette des états (appliqué à chaque écran)
 | État | Composant | Règle |
 |---|---|---|
-| Chargement initial | `LoadingState` + `Skeleton` à la forme du contenu | Libellé VoiceOver « Chargement de … ». Au-delà de 10 s : passer en erreur. |
+| Chargement initial | `LoadingState` + `Skeleton` à la forme du contenu (listes : `SkeletonRow`, pastille + 2 lignes) | Libellé VoiceOver « Chargement de … ». Au-delà de 10 s : passer en erreur. |
 | Rafraîchissement | `RefreshControl` | Contenu précédent conservé. |
-| Vide | `EmptyState` (`illustration` : `sunrise`, `together`, `privacy`, `calm`, `offline`, `farewell` ; 1 action max) | Rassurant, propose l'étape suivante. |
+| Vide | `EmptyState` (`illustration` : `sunrise`, `together`, `privacy`, `calm`, `offline`, `farewell` ; 1 action max, `action.variant: "secondary"` si l'écran a déjà son action principale) | Rassurant, propose l'étape suivante. |
 | Erreur | `ErrorState` + « Réessayer » | Dit quoi faire. Si des données en cache existent : les afficher + bandeau discret « Dernière mise à jour à 14 h 05 ». |
 
 ---
@@ -132,7 +132,7 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
 2. `SegmentedControl` « Aujourd'hui » / « Cette semaine » (VoiceOver groupe « Période du classement », onglets « sélectionné »). Bascule instantanée, données des deux périodes préchargées ; balayage horizontal sur la liste = même bascule.
 3. Contexte `subheadline textSecondary` : « Jeudi 24 septembre · toi et 4 amis » ou « Du lundi 21 au dimanche 27 septembre ».
 4. **Bandeau bienveillant** (`GlassCard` teinte `sunGlow`) : « Encore 1 201 pas pour dépasser lea » ; 1er : « Tu mènes la semaine. Belle régularité ! » ; ex æquo en tête : « Tu partages la tête avec sam.b ».
-5. **Liste** dans une `GlassCard` : `RankRow` pour chaque participant, dans l'ordre de l'API (rang, puis pseudo). Égalités : `markTies` → « ex æquo » sous le rang, rang suivant sauté (1, 2, 2, 4). Ma ligne : surlignage `highlight`, étiquette « toi », pas en `accentText`. 1er : pastille soleil. **Aucun traitement négatif** pour les derniers (pas de couleur, pas de mention).
+5. **Liste** dans une `GlassCard` : `RankRow` pour chaque participant, dans l'ordre de l'API (rang, puis pseudo). Égalités : `markTies` → « ex æquo » sous le rang, rang suivant sauté (1, 2, 2, 4). Ma ligne : surlignage `highlight`, `Monogram tone="surface"` (lisible sur le surlignage), étiquette « toi », pas en `accentText`. 1er : pastille soleil. **Aucun traitement négatif** pour les derniers (pas de couleur, pas de mention).
 6. Toucher la ligne d'un ami → Profil ami. Ma ligne : non pressable.
 7. Pied : `footnote` « Tire vers le bas pour actualiser. »
 

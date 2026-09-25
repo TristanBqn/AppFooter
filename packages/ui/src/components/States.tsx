@@ -1,9 +1,9 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Animated, StyleSheet, View, type DimensionValue } from "react-native";
 import { nativeDriver, useReducedMotion } from "../a11y";
-import { lightColors, motion, radius, space } from "../tokens";
+import { layout, lightColors, motion, radius, space } from "../tokens";
 import { AppText } from "./AppText";
-import { Button } from "./Button";
+import { Button, type ButtonVariant } from "./Button";
 import { Illustration, type IllustrationKind } from "./Illustration";
 
 export type SkeletonProps = { width?: DimensionValue; height?: number; rounded?: boolean };
@@ -56,7 +56,13 @@ export function LoadingState({ accessibilityLabel, children }: LoadingStateProps
   );
 }
 
-type Action = { label: string; onPress: () => void; loading?: boolean };
+type Action = {
+  label: string;
+  onPress: () => void;
+  loading?: boolean;
+  /** `primary` par défaut ; `secondary` si l'écran porte déjà son action principale (ex. Amis). */
+  variant?: Extract<ButtonVariant, "primary" | "secondary">;
+};
 
 export type EmptyStateProps = {
   title: string;
@@ -78,7 +84,30 @@ export function EmptyState({ title, message, action, illustration = "calm" }: Em
           {message}
         </AppText>
       ) : null}
-      {action ? <Button label={action.label} onPress={action.onPress} loading={action.loading} style={styles.action} /> : null}
+      {action ? (
+        <Button
+          label={action.label}
+          variant={action.variant ?? "primary"}
+          onPress={action.onPress}
+          loading={action.loading}
+          style={styles.action}
+        />
+      ) : null}
+    </View>
+  );
+}
+
+export type SkeletonRowProps = { lines?: 1 | 2 };
+
+/** Ligne squelette à la forme d'une `ListRow` / `RankRow` (pastille + une ou deux lignes de texte). */
+export function SkeletonRow({ lines = 2 }: SkeletonRowProps) {
+  return (
+    <View style={styles.row} aria-hidden>
+      <Skeleton width={40} height={40} rounded />
+      <View style={styles.rowText}>
+        <Skeleton height={16} width="55%" />
+        {lines === 2 ? <Skeleton height={12} width="35%" /> : null}
+      </View>
     </View>
   );
 }
@@ -111,4 +140,6 @@ const styles = StyleSheet.create({
   center: { alignItems: "center", justifyContent: "center", gap: space[3], paddingVertical: space[10], paddingHorizontal: space[6] },
   centerText: { textAlign: "center" },
   action: { marginTop: space[3], alignSelf: "stretch" },
+  row: { flexDirection: "row", alignItems: "center", gap: space[3], minHeight: layout.minTouch + space[2], paddingVertical: space[3] },
+  rowText: { flex: 1, gap: space[2] },
 });

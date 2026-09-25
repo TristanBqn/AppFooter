@@ -48,7 +48,7 @@ export function RankRow({ rank, tied, name, steps, isMe = false, onPress }: Rank
           </AppText>
         ) : null}
       </View>
-      <Monogram name={name} />
+      <Monogram name={name} tone={isMe ? "surface" : "soft"} />
       <View style={[styles.body, stacked && styles.bodyStacked]}>
         <View style={styles.nameLine}>
           <AppText variant="headline" numberOfLines={stacked ? undefined : 1} style={styles.name}>

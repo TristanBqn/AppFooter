@@ -29,8 +29,10 @@ export function SkyBackground({ variant = "sky", decorated = true, style, childr
               </RadialGradient>
             </Defs>
             <Circle cx={330} cy={40} r={120} fill="url(#sun)" />
-            <Path d={CLOUD} fill={lightColors.cloud} opacity={0.7} transform="translate(-30 70) scale(1.1)" />
-            <Path d={CLOUD} fill={lightColors.cloud} opacity={0.5} transform="translate(230 170) scale(0.7)" />
+            {/* Nuages confinés à la bande de la barre d'état (0–44 pt) et aux bords : aucun titre ni
+                texte ne doit se poser dessus (screens.md §0, revue visuelle). */}
+            <Path d={CLOUD} fill={lightColors.cloud} opacity={0.7} transform="translate(-70 -14) scale(0.9)" />
+            <Path d={CLOUD} fill={lightColors.cloud} opacity={0.5} transform="translate(318 6) scale(0.55)" />
           </Svg>
         </View>
       ) : null}
