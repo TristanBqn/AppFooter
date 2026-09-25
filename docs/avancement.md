@@ -39,7 +39,8 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | Revue visuelle par captures (docs/design/review/revue-visuelle.md) | en cours (designer) | — |
 | R1 config Playwright + E2E CA1–CA3 | terminé (12/12) | 1037f3e |
 | R2 E2E social CA5–CA9, CA11 | terminé (32/32, aucune anomalie) | voir git log |
-| R3 E2E CA12 + revue sécurité | en cours | — |
+| R3 E2E CA12 + revue sécurité | terminé (33/33 E2E, verdict livrable, 0 bloquant/majeur) | ba8e195 |
+| Boucle 1 [backend] timeout APNs + audit uuid/decode-uri-component | en cours (backend-2) | — |
 
 ## Demandes du lead encore ouvertes
 - **Sécurité dépendances** : exclusion `minimumReleaseAgeExclude` retirée ; expo-notifications épinglé en 57.0.20, conforme à la politique (fbf3c18). `pnpm install` repasse.
