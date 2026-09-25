@@ -20,7 +20,7 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | B10 encouragements (+ test encouragement 404 après blocage) | terminé | voir git log |
 | B11 suppression de compte, confidentialité | terminé (209 tests) | voir git log |
 | B-e2e limite auth réglable (E2E_AUTH_RATE_LIMIT, start:e2e seulement) | en cours | — |
-| B12 transport APNs | à faire | — |
+| B12 transport APNs | terminé (220 tests, fichiers inclus dans le commit de B11) | 66d89cf |
 | M1 scaffolding mobile + aperçu web | terminé | fb60949 |
 | M2 client API et session | terminé | 7aa4b20 |
 | M3 HealthSource | terminé | e7255e6 |
