@@ -20,7 +20,8 @@ export function toLocalDate(date: Date, timeZone: string): LocalDate {
   }).format(date) as LocalDate;
 }
 
-function addDays(date: LocalDate, amount: number): LocalDate {
+/** `date` décalée de `amount` jours (négatif pour reculer). */
+export function addDays(date: LocalDate, amount: number): LocalDate {
   const [year, month, day] = date.split("-").map(Number) as [number, number, number];
   const next = new Date(Date.UTC(year, month - 1, day + amount));
   return next.toISOString().slice(0, 10) as LocalDate;

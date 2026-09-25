@@ -7,7 +7,7 @@ export type { HealthSource } from "./HealthSource";
 export { SimulatedHealthSource } from "./SimulatedHealthSource";
 export { HealthKitSource, EXCLUDE_USER_ENTERED_FILTER } from "./HealthKitSource";
 export { resolveHealthSourceKind, getEasBuildProfile, type HealthSourceKind } from "./env";
-export { mergeDailyTotals, localDateRange, toLocalDate, type StatisticsBucket } from "./aggregate";
+export { mergeDailyTotals, localDateRange, toLocalDate, addDays, type StatisticsBucket } from "./aggregate";
 
 let cached: HealthSource | null = null;
 
