@@ -1,4 +1,4 @@
-# Avancement (tenu par le lead)
+﻿# Avancement (tenu par le lead)
 
 > Pas d'outil de liste de tâches partagé dans cette équipe : ce fichier fait foi pour reprendre (`/equipe reprendre`).
 > Définition des tâches : `docs/architecture.md` §9. Mis à jour : 2026-09-25, reprise : backend et mobile relancés.
@@ -13,19 +13,20 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | B3 sessions, dev login, /me, pseudonyme | terminé | f4b686e |
 | B4 Sign in with Apple | terminé | voir git log |
 | B5 paramètres, consentement, synchro, historique | terminé (WIP relu, complet, 109 tests verts) | 9b78061 |
-| B6 classements et accueil | en cours | — |
-| B7 → B12 | à faire | — |
+| B6 classements et accueil | terminé | 8fb10a6 |
+| B7 demandes d'amitié et amis | en cours | — |
+| B8 → B12 | à faire | — |
 | M1 scaffolding mobile + aperçu web | terminé | fb60949 |
 | M2 client API et session | terminé | 7aa4b20 |
 | M3 HealthSource | terminé | e7255e6 |
-| M4 connexion Apple, pseudonyme, consentement | **en cours, WIP commité** (écrans (auth) commencés : à relire et compléter ; vérifier les 2 demandes ouvertes) | WIP |
-| M5 → M11 | à faire | — |
+| M4 connexion Apple, pseudonyme, consentement | terminé | 6845cb6 |
+| M5 synchro et Accueil | en cours | — |
+| M6 → M11 | à faire | — |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
 | R1–R3 | phase 3 | — |
 
 ## Demandes du lead encore ouvertes
-- **mobile** (début de M4) : repli de stockage de session réservé au web (`src/api/session.ts`, `Platform.OS === "web"`), avec un test.
-- **mobile** : commentaire dans `src/health/HealthKitSource.ts` sur le risque qu'un prédicat `!=` exclue les échantillons sans clé `HKWasUserEntered`, plus un point dans la checklist M11 (vérification sur appareil, repli prévu).
+- **designer** (à sa prochaine relance) : mettre à jour screens.md, « Pas maintenant » au consentement ⇒ Accueil (et non page 2 de l'onboarding).
 
 ## Décisions utilisateur et arbitrages (en plus de brief.md et des ADR)
 - Pas d'app web ; aperçu web Expo réservé au rendu visuel et aux captures (pas de simulateur iOS sous Windows).
@@ -34,6 +35,8 @@ Validation humaine n°1 obtenue le 2026-09-24.
 - Consentement santé après la connexion Apple ; « dépasser » = écart + 1.
 - Politique de confidentialité : premier jet dans `docs/legal/privacy.md`, champs `[À COMPLÉTER]` à remplir par l'utilisateur et relecture juridique.
 - Tests mobiles : vitest (logique) ; accessibilité vérifiée par la checklist M11 et la revue visuelle.
+- `GET /me/today` et classements : 403 `USERNAME_REQUIRED` sans pseudonyme (routes sociales).
+- Refus du consentement santé (« Pas maintenant ») ⇒ Accueil avec message rassurant.
 
 ## En attente de l'utilisateur
 - `ios.bundleIdentifier` = `fr.tristanbqn.footer` (provisoire, à revoir plus tard ; projet personnel : aucune référence professionnelle). Le reporter dans `APPLE_BUNDLE_ID` côté API. Team ID Apple à fournir avant tout build EAS.
