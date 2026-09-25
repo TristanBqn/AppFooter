@@ -37,11 +37,12 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
 | Compléments UI (StatTile.onPress, SunBadge, screens.md consentement) | terminé | 96a1e40 |
 | Revue visuelle par captures (docs/design/review/revue-visuelle.md) | terminé : 54 captures, 22 écarts (1 bloquant, 12 majeurs, 9 mineurs) | 83314f0 |
-| Boucle 1 [mobile] B1 consentement, M1–M10, m1–m7 | en cours (mobile-2), puis 2e passe de captures (designer-2) | — |
+| Boucle 1 [mobile] B1 consentement, M1–M10, m1–m7 | terminé (2e passe : 20/22) | 527cd27 |
+| Boucle 2 [mobile] M3 toast, n1 squelette, m7 seuil simulé | terminé, vérification captures en cours (designer-2) | 36bc220, 6893272 |
 | R1 config Playwright + E2E CA1–CA3 | terminé (12/12) | 1037f3e |
 | R2 E2E social CA5–CA9, CA11 | terminé (32/32, aucune anomalie) | voir git log |
 | R3 E2E CA12 + revue sécurité | terminé (33/33 E2E, verdict livrable, 0 bloquant/majeur) | ba8e195 |
-| Boucle 1 [backend] timeout APNs + audit uuid/decode-uri-component | en cours (backend-2) | — |
+| Boucle 1 [backend] timeout APNs + audit dépendances | terminé : timeout 10 s, override uuid borné, decode-uri-component en dette | d5a6066 |
 
 ## Demandes du lead encore ouvertes
 - **Sécurité dépendances** : exclusion `minimumReleaseAgeExclude` retirée ; expo-notifications épinglé en 57.0.20, conforme à la politique (fbf3c18). `pnpm install` repasse.
@@ -55,6 +56,10 @@ Validation humaine n°1 obtenue le 2026-09-24.
 - Tests mobiles : vitest (logique) ; accessibilité vérifiée par la checklist M11 et la revue visuelle.
 - `GET /me/today` et classements : 403 `USERNAME_REQUIRED` sans pseudonyme (routes sociales).
 - Refus du consentement santé (« Pas maintenant ») ⇒ Accueil avec message rassurant.
+
+## Dette acceptée (arbitrage lead)
+- `decode-uri-component@0.2.2` (CVE ReDoS, modérée), via `query-string@7` ← `expo-router` : **embarqué dans l'app** (pas seulement l'outillage). Surface : URL ou lien profond malformé traité par le routeur, impact limité à un gel local de l'app. La version 0.5 est ESM pur, incompatible avec `require()` de query-string@7. À réévaluer à la prochaine mise à jour d'expo-router.
+- Vérifications sur appareil réel : `apps/mobile/docs/checklist-m11.md` (HealthKit `HKWasUserEntered`, refus HealthKit, VoiceOver sur la pastille de l'onglet Amis, rendu natif des grands titres, icônes, interrupteurs).
 
 ## En attente de l'utilisateur
 - `ios.bundleIdentifier` = `fr.tristanbqn.footer` (provisoire, à revoir plus tard ; projet personnel : aucune référence professionnelle). Le reporter dans `APPLE_BUNDLE_ID` côté API. Team ID Apple à fournir avant tout build EAS.
