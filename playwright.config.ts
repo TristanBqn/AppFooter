@@ -9,6 +9,10 @@ const baseURL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  // Provisionne une fois pour toutes les comptes de dev partagés par les suites sociales
+  // (tests/e2e/global-setup.ts) : la base PGlite n'offrant aucune remise à zéro entre tests, cela
+  // limite le nombre de comptes créés et garde les specs lisibles (`loadPool()`).
+  globalSetup: "./tests/e2e/global-setup.ts",
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
