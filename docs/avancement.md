@@ -30,7 +30,7 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | R1–R3 | phase 3 | — |
 
 ## Demandes du lead encore ouvertes
-- **designer** (relancé) : screens.md « Pas maintenant » ⇒ Accueil ; `StatTile.onPress` ; `ListRow.leading` (pastille soleil).
+- **designer** (relancé) : screens.md « Pas maintenant » ⇒ Accueil ; `StatTile.onPress` ; `ListRow.leading` (pastille soleil) ; `RankRow.onPress`.
 - **backend** : test MAX_FRIENDS (limite injectable) : rappelé après B8, à livrer avant B9.
 - **mobile**, reports de M5 : carte « prochain ami » (M7), encouragements reçus (M8), engrenage Paramètres (M9), animation de seuil (M11).
 
