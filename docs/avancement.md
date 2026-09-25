@@ -1,7 +1,7 @@
 # Avancement (tenu par le lead)
 
 > Pas d'outil de liste de tâches partagé dans cette équipe : ce fichier fait foi pour reprendre (`/equipe reprendre`).
-> Définition des tâches : `docs/architecture.md` §9. Mis à jour : 2026-09-24, tous les coéquipiers arrêtés proprement (limite d’usage).
+> Définition des tâches : `docs/architecture.md` §9. Mis à jour : 2026-09-25, reprise : backend et mobile relancés.
 
 ## Phase en cours : 2 (construction)
 Validation humaine n°1 obtenue le 2026-09-24.
@@ -12,8 +12,9 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | B2 schéma et migrations | terminé | ac9246a |
 | B3 sessions, dev login, /me, pseudonyme | terminé | f4b686e |
 | B4 Sign in with Apple | terminé | voir git log |
-| B5 paramètres, consentement, synchro, historique | **en cours, WIP commité** (check vert mais tâche non déclarée terminée : à relire et compléter) | WIP |
-| B6 → B12 | à faire | — |
+| B5 paramètres, consentement, synchro, historique | terminé (WIP relu, complet, 109 tests verts) | 9b78061 |
+| B6 classements et accueil | en cours | — |
+| B7 → B12 | à faire | — |
 | M1 scaffolding mobile + aperçu web | terminé | fb60949 |
 | M2 client API et session | terminé | 7aa4b20 |
 | M3 HealthSource | terminé | e7255e6 |
