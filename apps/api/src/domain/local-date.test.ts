@@ -46,4 +46,11 @@ describe("isoWeekday / mondayOfWeek", () => {
   it("semaine à cheval sur un changement de mois", () => {
     expect(mondayOfWeek("2026-03-01")).toBe("2026-02-23");
   });
+
+  it("semaine à cheval sur un changement d'heure (DST) : calcul purement calendaire", () => {
+    // Dimanche 25 octobre 2026 : passage heure d'été -> hiver en Europe/Paris. Le calcul ne
+    // dépend que de la date civile, jamais d'une heure locale réelle ni d'un fuseau.
+    expect(mondayOfWeek("2026-10-25")).toBe("2026-10-19");
+    expect(addDaysToLocalDate("2026-10-19", 6)).toBe("2026-10-25");
+  });
 });
