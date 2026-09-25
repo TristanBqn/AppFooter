@@ -27,10 +27,10 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | M7 amis, demandes, fiche ami | en cours | — |
 | M8 → M11 | à faire | — |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
+| Compléments UI (StatTile.onPress, SunBadge, screens.md consentement) | terminé, designer arrêté jusqu'en phase 3 | 96a1e40 |
 | R1–R3 | phase 3 | — |
 
 ## Demandes du lead encore ouvertes
-- **designer** (relancé) : screens.md « Pas maintenant » ⇒ Accueil ; `StatTile.onPress` ; `ListRow.leading` (pastille soleil) ; `RankRow.onPress`.
 - **backend** : test MAX_FRIENDS (limite injectable) : rappelé après B8, à livrer avant B9.
 - **mobile**, reports de M5 : carte « prochain ami » (M7), encouragements reçus (M8), engrenage Paramètres (M9), animation de seuil (M11).
 
