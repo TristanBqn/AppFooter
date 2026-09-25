@@ -31,3 +31,8 @@ export async function parseJsonBody<T extends z.ZodTypeAny>(c: Context, schema: 
 export function parseQuery<T extends z.ZodTypeAny>(c: Context, schema: T): z.infer<T> {
   return parseWith(schema, c.req.query());
 }
+
+/** Valide les paramètres de chemin (`:id`, `:userId`…). */
+export function parseParam<T extends z.ZodTypeAny>(c: Context, schema: T): z.infer<T> {
+  return parseWith(schema, c.req.param());
+}

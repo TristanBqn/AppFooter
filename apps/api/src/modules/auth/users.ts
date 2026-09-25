@@ -4,22 +4,12 @@ import { schema } from "@app/db";
 import type { Db } from "@app/db";
 import { eq } from "drizzle-orm";
 import { AppError } from "../../errors";
+import { isUniqueViolation } from "../../lib/db-errors";
 
 export interface SignedInUser {
   id: string;
   username: string | null;
   needsUsername: boolean;
-}
-
-/**
- * Code SQLSTATE d'une violation de contrainte unique (identique pour `pg` et PGlite, vrai
- * Postgres). Drizzle enveloppe l'erreur du pilote dans `DrizzleQueryError` (`.cause`).
- */
-function isUniqueViolation(err: unknown): boolean {
-  const code = (err as { code?: unknown } | undefined)?.code;
-  if (code === "23505") return true;
-  const cause = (err as { cause?: unknown } | undefined)?.cause;
-  return typeof cause === "object" && cause !== null && (cause as { code?: unknown }).code === "23505";
 }
 
 /** Trouve ou crée l'utilisateur pour un `apple_sub` donné (réel ou `dev:<clé>`), avec ses paramètres par défaut. */
