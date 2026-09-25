@@ -39,6 +39,12 @@ function stopApi() {
   }
 }
 process.on("exit", stopApi);
+// Interruption (Ctrl+C) ou erreur hors du try/finally principal : l'API ne doit jamais rester active.
+for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => process.exit(130));
+process.on("uncaughtException", (e) => {
+  console.error(e);
+  process.exit(1);
+});
 
 async function waitApi() {
   for (let i = 0; i < 120; i += 1) {
