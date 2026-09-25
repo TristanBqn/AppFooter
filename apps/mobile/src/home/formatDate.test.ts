@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDayOfMonth, formatHeaderDate, formatShortDate } from "./formatDate";
+import { formatDayOfMonth, formatHeaderDate, formatShortDate, formatWeekRange } from "./formatDate";
 
 describe("formatDate", () => {
   it("formatHeaderDate met une majuscule au jour de semaine", () => {
@@ -17,5 +17,9 @@ describe("formatDate", () => {
   it("ne glisse pas d'un jour en fin/début de mois", () => {
     expect(formatHeaderDate("2026-01-01")).toBe("Jeudi 1 janvier");
     expect(formatHeaderDate("2025-12-31")).toBe("Mercredi 31 décembre");
+  });
+
+  it("formatWeekRange encadre lundi->dimanche", () => {
+    expect(formatWeekRange("2026-09-21", "2026-09-27")).toBe("Du lundi 21 au dimanche 27 septembre");
   });
 });

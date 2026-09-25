@@ -1,17 +1,141 @@
-import { ScrollView } from "react-native";
-import { AppText, GlassCard, SkyBackground } from "@app/ui";
+import { useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
+import type { LeaderboardPeriod } from "@app/contracts";
+import {
+  AppText,
+  EmptyState,
+  ErrorState,
+  GlassCard,
+  LoadingState,
+  RankRow,
+  SegmentedControl,
+  Skeleton,
+  SkyBackground,
+  markTies,
+} from "@app/ui";
+import { layout, lightColors, radius, shadow } from "@app/ui/tokens";
+import { api } from "../../../src/api/endpoints";
+import { formatHeaderDate, formatWeekRange } from "../../../src/home/formatDate";
+import { buildLeaderboardBanner, leaderboardBannerText } from "../../../src/leaderboard/banner";
 
-// Écran vide (M1). Classement quotidien / hebdomadaire réel : M6.
+// Classement quotidien / hebdomadaire (M6, CA5, CA6, screens.md §5). Le profil d'un ami (toucher
+// une ligne) arrive avec M7 (écran pas encore disponible) : RankRow reste donc non pressable ici.
+const PERIOD_OPTIONS = [
+  { value: "daily" as const, label: "Aujourd'hui" },
+  { value: "weekly" as const, label: "Cette semaine" },
+];
+
+function friendsCountLabel(count: number): string {
+  if (count === 0) return "toi seul";
+  if (count === 1) return "toi et 1 ami";
+  return `toi et ${count} amis`;
+}
+
 export default function ClassementScreen() {
+  const [period, setPeriod] = useState<LeaderboardPeriod>("daily");
+
+  // Les deux périodes sont préchargées (screens.md §5) : la bascule est instantanée.
+  const dailyQuery = useQuery({ queryKey: ["leaderboard", "daily"] as const, queryFn: api.leaderboards.daily });
+  const weeklyQuery = useQuery({ queryKey: ["leaderboard", "weekly"] as const, queryFn: api.leaderboards.weekly });
+  const query = period === "daily" ? dailyQuery : weeklyQuery;
+
+  async function onRefresh() {
+    await Promise.all([dailyQuery.refetch(), weeklyQuery.refetch()]);
+  }
+
+  const entries = query.data?.entries ?? [];
+  const rows = markTies(entries);
+  const friendsCount = Math.max(0, entries.length - 1);
+  const banner = query.data && friendsCount > 0 ? buildLeaderboardBanner(entries, period) : null;
+  const bannerText = banner ? leaderboardBannerText(banner, period) : null;
+
+  const contextLabel = query.data
+    ? period === "daily"
+      ? `${formatHeaderDate(query.data.start)} · ${friendsCountLabel(friendsCount)}`
+      : formatWeekRange(query.data.start, query.data.end)
+    : null;
+
   return (
     <SkyBackground variant="sky">
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: 20 }}>
-        <GlassCard>
-          <AppText variant="body" color="textSecondary">
-            Le classement de tes amis s'affichera bientôt ici.
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ padding: 20, gap: 16 }}
+        refreshControl={<RefreshControl refreshing={query.isFetching} onRefresh={onRefresh} tintColor={lightColors.accent} />}
+      >
+        <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={setPeriod} accessibilityLabel="Période du classement" />
+
+        {contextLabel ? (
+          <AppText variant="subheadline" color="textSecondary">
+            {contextLabel}
           </AppText>
-        </GlassCard>
+        ) : null}
+
+        {query.isPending ? (
+          <GlassCard>
+            <LoadingState accessibilityLabel="Chargement du classement">
+              <View className="gap-3">
+                {Array.from({ length: 5 }, (_, index) => (
+                  <Skeleton key={index} height={64} />
+                ))}
+              </View>
+            </LoadingState>
+          </GlassCard>
+        ) : null}
+
+        {query.isError && !query.data ? (
+          <GlassCard>
+            <ErrorState
+              message="Le classement n'a pas pu se charger. Vérifie ta connexion puis réessaie."
+              onRetry={onRefresh}
+              retrying={query.isFetching}
+            />
+          </GlassCard>
+        ) : null}
+
+        {query.data ? (
+          <>
+            {bannerText ? (
+              <View style={styles.banner}>
+                <AppText variant="headline" style={{ textAlign: "center" }}>
+                  {bannerText}
+                </AppText>
+              </View>
+            ) : null}
+
+            <GlassCard>
+              <View className="gap-1">
+                {rows.map((row) => (
+                  <RankRow key={row.userId} rank={row.rank} tied={row.tied} name={row.username} steps={row.steps} isMe={row.isMe} />
+                ))}
+              </View>
+            </GlassCard>
+
+            {friendsCount === 0 ? (
+              <EmptyState
+                illustration="together"
+                title="Le classement se remplit avec tes amis"
+                message="Ajoute un proche avec son pseudo pour marcher ensemble."
+                action={{ label: "Ajouter un ami", onPress: () => router.push("/(tabs)/amis") }}
+              />
+            ) : null}
+
+            <AppText variant="footnote" color="textSecondary" style={{ textAlign: "center" }}>
+              Tire vers le bas pour actualiser.
+            </AppText>
+          </>
+        ) : null}
       </ScrollView>
     </SkyBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  banner: {
+    backgroundColor: lightColors.sunGlow,
+    borderRadius: radius.lg,
+    padding: layout.cardPadding,
+    boxShadow: shadow.soft.css,
+  },
+});

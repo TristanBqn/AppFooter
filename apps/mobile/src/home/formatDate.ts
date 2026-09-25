@@ -31,3 +31,12 @@ export function formatShortDate(date: LocalDate): string {
 export function formatDayOfMonth(date: LocalDate): string {
   return `le ${new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(toMidnight(date))}`;
 }
+
+/** "2026-09-21", "2026-09-27" -> "Du lundi 21 au dimanche 27 septembre" (contexte Classement hebdomadaire). */
+export function formatWeekRange(start: LocalDate, end: LocalDate): string {
+  const startLabel = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric" }).format(toMidnight(start));
+  const endLabel = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(
+    toMidnight(end),
+  );
+  return `Du ${startLabel} au ${endLabel}`;
+}
