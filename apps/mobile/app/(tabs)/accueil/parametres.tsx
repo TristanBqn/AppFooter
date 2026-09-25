@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Linking, ScrollView, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
 import type { Settings, UpdateSettingsRequest } from "@app/contracts";
-import { AppText, ErrorState, GlassCard, ListRow, LoadingState, Skeleton, SkyBackground, SwitchRow } from "@app/ui";
+import { AppText, Button, ErrorState, GlassCard, ListRow, LoadingState, Skeleton, SkyBackground, SwitchRow } from "@app/ui";
 import { useAuth } from "../../../src/auth/AuthProvider";
 import { api, PRIVACY_URL } from "../../../src/api/endpoints";
 import { formatLocalTime, parseLocalTime } from "../../../src/settings/localTime";
@@ -13,18 +14,29 @@ import { mergeSettings } from "../../../src/settings/mergeSettings";
 import { BLOCKS_QUERY_KEY, SETTINGS_QUERY_KEY } from "../../../src/settings/queryKeys";
 import { useToast } from "../../../src/hooks/useToast";
 
-// Paramètres (M9, CA11/CA12, screens.md §9). Bandeau « notifications refusées » : différé à M10
-// (expo-notifications, pas encore une dépendance de l'app) — les interrupteurs restent des
-// préférences serveur, indépendantes de la permission système tant que M10 n'est pas fait.
+// Paramètres (M9/M10, CA10/CA11/CA12, screens.md §9).
 const SETTINGS_SAVE_ERROR = "Réglage non enregistré. Vérifie ta connexion puis réessaie.";
 
 export default function ParametresScreen() {
   const { me, signOut } = useAuth();
   const { showToast, toastElement } = useToast();
   const queryClient = useQueryClient();
+  const [notificationsBlocked, setNotificationsBlocked] = useState(false);
 
   const settingsQuery = useQuery({ queryKey: SETTINGS_QUERY_KEY, queryFn: api.me.getSettings });
   const blocksQuery = useQuery({ queryKey: BLOCKS_QUERY_KEY, queryFn: api.blocks.list });
+
+  useEffect(() => {
+    let active = true;
+    Notifications.getPermissionsAsync()
+      .then((settings) => {
+        if (active) setNotificationsBlocked(!settings.granted);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const updateMutation = useMutation({
     mutationFn: (patch: UpdateSettingsRequest) => api.me.updateSettings(patch),
@@ -122,30 +134,43 @@ export default function ParametresScreen() {
                 <AppText variant="footnote" color="textSecondary">
                   NOTIFICATIONS
                 </AppText>
+                {notificationsBlocked ? (
+                  <View className="gap-2" style={{ paddingVertical: 8 }}>
+                    <AppText variant="footnote" color="warning">
+                      Les notifications sont désactivées pour Footer.
+                    </AppText>
+                    <Button label="Ouvrir Réglages" variant="ghost" size="compact" onPress={() => Linking.openSettings()} />
+                  </View>
+                ) : null}
                 <SwitchRow
                   title="Mes paliers de pas"
                   value={settings.notifications.milestones}
+                  disabled={notificationsBlocked}
                   onValueChange={(value) => updateMutation.mutate({ notifications: { milestones: value } })}
                 />
                 <SwitchRow
                   title="Paliers de mes amis"
                   value={settings.notifications.friendMilestones}
+                  disabled={notificationsBlocked}
                   onValueChange={(value) => updateMutation.mutate({ notifications: { friendMilestones: value } })}
                 />
                 <SwitchRow
                   title="Encouragements reçus"
                   value={settings.notifications.encouragements}
+                  disabled={notificationsBlocked}
                   onValueChange={(value) => updateMutation.mutate({ notifications: { encouragements: value } })}
                 />
                 <SwitchRow
                   title="Demandes d'amitié"
                   value={settings.notifications.friendRequests}
+                  disabled={notificationsBlocked}
                   onValueChange={(value) => updateMutation.mutate({ notifications: { friendRequests: value } })}
                 />
                 <SwitchRow
                   title="Heures silencieuses"
                   subtitle="Aucune notification non urgente pendant ces heures."
                   value={settings.quietHours.enabled}
+                  disabled={notificationsBlocked}
                   onValueChange={(value) => updateMutation.mutate({ quietHours: { ...settings.quietHours, enabled: value } })}
                 />
                 {settings.quietHours.enabled ? (
