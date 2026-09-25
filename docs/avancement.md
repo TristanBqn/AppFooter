@@ -3,7 +3,8 @@
 > Pas d'outil de liste de tâches partagé dans cette équipe : ce fichier fait foi pour reprendre (`/equipe reprendre`).
 > Définition des tâches : `docs/architecture.md` §9. Mis à jour : 2026-09-25, reprise : backend et mobile relancés.
 
-## Phase en cours : 2 (construction)
+## Phase en cours : 3 (contrôle)
+Phase 2 terminée le 2026-09-25 (B1–B12, M1–M11).
 Validation humaine n°1 obtenue le 2026-09-24.
 
 | Tâche | Statut | Commit |
@@ -19,7 +20,7 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | B9 pipeline de notifications (+ MAX_FRIENDS injectable, quota demandes en base) | terminé | voir B10 |
 | B10 encouragements (+ test encouragement 404 après blocage) | terminé | voir git log |
 | B11 suppression de compte, confidentialité | terminé (209 tests) | voir git log |
-| B-e2e limite auth réglable (E2E_AUTH_RATE_LIMIT, start:e2e seulement) | en cours | — |
+| B-e2e limite auth réglable (E2E_AUTH_RATE_LIMIT, start:e2e seulement) | terminé (223 tests), backend arrêté | d47210c |
 | B12 transport APNs | terminé (220 tests, fichiers inclus dans le commit de B11) | 66d89cf |
 | M1 scaffolding mobile + aperçu web | terminé | fb60949 |
 | M2 client API et session | terminé | 7aa4b20 |
@@ -34,7 +35,8 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | M10 notifications push | terminé (routage par type de push : choix documenté dans src/notifications/route.ts) | 87b4220 |
 | M11 passe accessibilité | terminé (revue de code ; checklist à dérouler sur appareil : apps/mobile/docs/checklist-m11.md) | a6f89cd |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
-| Compléments UI (StatTile.onPress, SunBadge, screens.md consentement) | terminé, designer arrêté jusqu'en phase 3 | 96a1e40 |
+| Compléments UI (StatTile.onPress, SunBadge, screens.md consentement) | terminé | 96a1e40 |
+| Revue visuelle par captures (docs/design/review/revue-visuelle.md) | en cours (designer) | — |
 | R1 config Playwright + E2E CA1–CA3 | terminé (12/12) | 1037f3e |
 | R2 E2E social CA5–CA9, CA11 | en cours | — |
 | R3 E2E CA12 + revue sécurité | débloqué (B11 livré) | — |
@@ -59,6 +61,5 @@ Validation humaine n°1 obtenue le 2026-09-24.
 
 ## Pour reprendre
 1. `claude --model opus` dans ce dossier, puis `/equipe reprendre`.
-2. Relancer `backend` sur la tâche en cours du tableau (travail non commité éventuel : `git status`), puis les suivantes jusqu’à B12.
-3. Relancer `mobile` sur M4 → M11, avec les deux demandes ouvertes ci-dessus.
-4. Relancer `designer` seulement s'il est sollicité par le mobile, sinon en phase 3 pour la revue visuelle.
+2. Phase 3 : relancer `reviewer` sur la tâche R ouverte du tableau et `designer` si la revue visuelle n'est pas faite.
+3. Relancer `backend` ou `mobile` seulement pour corriger les anomalies `[owner]` remontées (2 boucles au maximum).
