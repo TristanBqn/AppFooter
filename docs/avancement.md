@@ -36,7 +36,8 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | M11 passe accessibilité | terminé (revue de code ; checklist à dérouler sur appareil : apps/mobile/docs/checklist-m11.md) | a6f89cd |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
 | Compléments UI (StatTile.onPress, SunBadge, screens.md consentement) | terminé | 96a1e40 |
-| Revue visuelle par captures (docs/design/review/revue-visuelle.md) | en cours (designer) | — |
+| Revue visuelle par captures (docs/design/review/revue-visuelle.md) | terminé : 54 captures, 22 écarts (1 bloquant, 12 majeurs, 9 mineurs) | 83314f0 |
+| Boucle 1 [mobile] B1 consentement, M1–M10, m1–m7 | en cours (mobile-2), puis 2e passe de captures (designer-2) | — |
 | R1 config Playwright + E2E CA1–CA3 | terminé (12/12) | 1037f3e |
 | R2 E2E social CA5–CA9, CA11 | terminé (32/32, aucune anomalie) | voir git log |
 | R3 E2E CA12 + revue sécurité | terminé (33/33 E2E, verdict livrable, 0 bloquant/majeur) | ba8e195 |
