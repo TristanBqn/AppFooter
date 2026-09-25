@@ -153,8 +153,12 @@ export default function AccueilScreen() {
                 <View className="items-center gap-4">
                   <Skeleton height={240} width={240} rounded />
                   <View className="w-full flex-row gap-3">
-                    <Skeleton height={56} />
-                    <Skeleton height={56} />
+                    <View style={{ flex: 1 }}>
+                      <Skeleton height={56} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Skeleton height={56} />
+                    </View>
                   </View>
                 </View>
               </LoadingState>
