@@ -16,6 +16,8 @@ export interface AppDeps {
   pushTransport: PushTransport;
   /** Injectable (tests) ; `MAX_FRIENDS` (`@app/contracts`) par défaut. */
   maxFriends: number;
+  /** Injectable (tests, E2E via `E2E_AUTH_RATE_LIMIT`) ; `RATE_LIMIT_AUTH_PER_MINUTE_PER_IP` par défaut. */
+  authRateLimitPerMinute: number;
 }
 
 /** Posé par le middleware d'authentification (`middleware/auth.ts`) sur les routes non publiques. */

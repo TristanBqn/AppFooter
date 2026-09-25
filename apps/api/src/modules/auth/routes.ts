@@ -1,11 +1,5 @@
 // POST /auth/apple (ADR 001), POST /auth/dev (hors production), POST /auth/logout (ADR 007).
-import {
-  AppleSignInRequestSchema,
-  DevSignInRequestSchema,
-  RATE_LIMIT_AUTH_PER_MINUTE_PER_IP,
-  type SignInResponse,
-  SignInResponseSchema,
-} from "@app/contracts";
+import { AppleSignInRequestSchema, DevSignInRequestSchema, type SignInResponse, SignInResponseSchema } from "@app/contracts";
 import { schema } from "@app/db";
 import { eq } from "drizzle-orm";
 import type { AppDeps, AppHono } from "../../context";
@@ -33,7 +27,7 @@ export function registerAuthRoutes(app: AppHono, deps: AppDeps): void {
   app.use(
     "/auth/*",
     rateLimit({
-      max: RATE_LIMIT_AUTH_PER_MINUTE_PER_IP,
+      max: deps.authRateLimitPerMinute,
       windowMs: ONE_MINUTE_MS,
       keyFn: (c) => `auth-ip:${getClientIp(c, deps.env.trustProxy)}`,
     }),

@@ -2,7 +2,7 @@
 // enveloppe d'erreur unique du contrat (400 validation, 404 JSON, 500 sans détail interne).
 // Les routes métier sont ajoutées tâche par tâche (B3 et suivantes).
 import type { ApiError } from "@app/contracts";
-import { MAX_FRIENDS, RATE_LIMIT_PER_MINUTE_PER_USER } from "@app/contracts";
+import { MAX_FRIENDS, RATE_LIMIT_AUTH_PER_MINUTE_PER_IP, RATE_LIMIT_PER_MINUTE_PER_USER } from "@app/contracts";
 import type { Db } from "@app/db";
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
@@ -49,6 +49,8 @@ export interface CreateAppOptions {
   pushTransport?: PushTransport;
   /** Injectable pour les tests (limite basse) ; `MAX_FRIENDS` (200, `@app/contracts`) par défaut. */
   maxFriends?: number;
+  /** Injectable (tests, E2E) ; `RATE_LIMIT_AUTH_PER_MINUTE_PER_IP` (`@app/contracts`) par défaut. */
+  authRateLimitPerMinute?: number;
 }
 
 export function createApp(options: CreateAppOptions): AppHono {
@@ -61,6 +63,7 @@ export function createApp(options: CreateAppOptions): AppHono {
     appleTokenClient: options.appleTokenClient ?? appleDefaults.appleTokenClient,
     pushTransport: options.pushTransport ?? createPushTransport(options.env, options.db),
     maxFriends: options.maxFriends ?? MAX_FRIENDS,
+    authRateLimitPerMinute: options.authRateLimitPerMinute ?? RATE_LIMIT_AUTH_PER_MINUTE_PER_IP,
   };
   const app: AppHono = new Hono();
 

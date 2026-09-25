@@ -46,5 +46,15 @@ describe("loadEnv", () => {
     const env = loadEnv(validProduction);
     expect(env.appEnv).toBe("production");
     expect(env.pushTransport).toBe("apns");
+    expect(env.e2eAuthRateLimit).toBeUndefined();
+  });
+
+  it("production avec E2E_AUTH_RATE_LIMIT défini ⇒ échec (réservé à start:e2e)", () => {
+    expect(() => loadEnv({ ...validProduction, E2E_AUTH_RATE_LIMIT: "1000" })).toThrowError(/E2E_AUTH_RATE_LIMIT/);
+  });
+
+  it("hors production, E2E_AUTH_RATE_LIMIT est accepté et converti en nombre", () => {
+    const env = loadEnv({ E2E_AUTH_RATE_LIMIT: "1000" });
+    expect(env.e2eAuthRateLimit).toBe(1000);
   });
 });

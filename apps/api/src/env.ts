@@ -22,6 +22,9 @@ const RawEnvSchema = z.object({
   APNS_KEY_ID: z.string().min(1).optional(),
   APNS_PRIVATE_KEY: z.string().min(1).optional(),
   TRUST_PROXY: booleanFlag,
+  /** Débit /auth/* relevé pour les E2E (beaucoup d'utilisateurs créés depuis une même IP) ;
+   * jamais en production (voir `assertProductionReady`), fixé uniquement par `start:e2e`. */
+  E2E_AUTH_RATE_LIMIT: z.coerce.number().int().positive().optional(),
 });
 
 export interface Env {
@@ -38,6 +41,7 @@ export interface Env {
   apnsKeyId: string | undefined;
   apnsPrivateKey: string | undefined;
   trustProxy: boolean;
+  e2eAuthRateLimit: number | undefined;
 }
 
 /** Lève une erreur listant tout ce qui manque plutôt que d'échouer sur la première variable. */
@@ -55,6 +59,7 @@ function assertProductionReady(env: Env): void {
   if (!env.appleTokenEncKey) problems.push("APPLE_TOKEN_ENC_KEY");
   if (!env.apnsKeyId) problems.push("APNS_KEY_ID");
   if (!env.apnsPrivateKey) problems.push("APNS_PRIVATE_KEY");
+  if (env.e2eAuthRateLimit !== undefined) problems.push("E2E_AUTH_RATE_LIMIT ne doit jamais être défini en production");
   if (problems.length > 0) {
     throw new Error(`Configuration de production invalide : ${problems.join(", ")}`);
   }
@@ -76,6 +81,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     apnsKeyId: raw.APNS_KEY_ID,
     apnsPrivateKey: raw.APNS_PRIVATE_KEY,
     trustProxy: raw.TRUST_PROXY,
+    e2eAuthRateLimit: raw.E2E_AUTH_RATE_LIMIT,
   };
   assertProductionReady(env);
   return env;

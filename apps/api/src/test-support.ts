@@ -22,6 +22,7 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
     apnsKeyId: undefined,
     apnsPrivateKey: undefined,
     trustProxy: false,
+    e2eAuthRateLimit: undefined,
     ...overrides,
   };
 }
@@ -39,6 +40,7 @@ export interface CreateTestAppOptions {
   appleTokenClient?: AppleTokenClient;
   pushTransport?: PushTransport;
   maxFriends?: number;
+  authRateLimitPerMinute?: number;
 }
 
 export async function createTestApp(options: CreateTestAppOptions = {}): Promise<TestApp> {
@@ -53,6 +55,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}): Promise
     appleTokenClient: options.appleTokenClient,
     pushTransport,
     maxFriends: options.maxFriends,
+    authRateLimitPerMinute: options.authRateLimitPerMinute,
   });
   return { ...handle, app, pushTransport };
 }

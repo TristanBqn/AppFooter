@@ -77,4 +77,11 @@ describe("POST /auth/dev, POST /auth/logout (ADR 001)", () => {
     expect(limited.status).toBe(429);
     expect(limited.headers.get("retry-after")).toBeTruthy();
   });
+
+  it("limite de débit /auth/* injectable (E2E_AUTH_RATE_LIMIT via CreateAppOptions.authRateLimitPerMinute)", async () => {
+    testApp = await createTestApp({ authRateLimitPerMinute: 2 });
+    expect((await signInDev(testApp, "alice")).status).toBe(200);
+    expect((await signInDev(testApp, "alice")).status).toBe(200);
+    expect((await signInDev(testApp, "alice")).status).toBe(429);
+  });
 });

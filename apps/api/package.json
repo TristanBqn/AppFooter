@@ -10,7 +10,7 @@
     "check": "tsc --noEmit && vitest run",
     "build": "node scripts/build.mjs",
     "start": "node dist/server.js",
-    "start:e2e": "cross-env APP_ENV=test DATABASE_URL= ENABLE_DEV_LOGIN=true PUSH_TRANSPORT=console API_PORT=4000 tsx src/server.ts"
+    "start:e2e": "cross-env APP_ENV=test DATABASE_URL= ENABLE_DEV_LOGIN=true PUSH_TRANSPORT=console API_PORT=4000 E2E_AUTH_RATE_LIMIT=1000 tsx src/server.ts"
   },
   "dependencies": {
     "@app/contracts": "workspace:*",
