@@ -11,7 +11,7 @@ import {
   LoadingState,
   RankRow,
   SegmentedControl,
-  Skeleton,
+  SkeletonRow,
   SkyBackground,
   markTies,
 } from "@app/ui";
@@ -92,7 +92,7 @@ export default function ClassementScreen() {
             <LoadingState accessibilityLabel="Chargement du classement">
               <View className="gap-3">
                 {Array.from({ length: 5 }, (_, index) => (
-                  <Skeleton key={index} height={64} />
+                  <SkeletonRow key={index} />
                 ))}
               </View>
             </LoadingState>

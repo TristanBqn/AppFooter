@@ -12,7 +12,7 @@ import {
   ListRow,
   LoadingState,
   Monogram,
-  Skeleton,
+  SkeletonRow,
   SkyBackground,
   TextField,
   announce,
@@ -194,9 +194,9 @@ export default function AmisScreen() {
           <GlassCard>
             <LoadingState accessibilityLabel="Chargement de tes amis">
               <View className="gap-3">
-                <Skeleton height={56} />
-                <Skeleton height={56} />
-                <Skeleton height={56} />
+                <SkeletonRow />
+                <SkeletonRow />
+                <SkeletonRow />
               </View>
             </LoadingState>
           </GlassCard>
@@ -220,7 +220,7 @@ export default function AmisScreen() {
             illustration="sunrise"
             title="Marcher, c'est mieux à plusieurs"
             message={`Demande à un proche son pseudo Footer et ajoute-le ci-dessus. Ton pseudo : ${me?.username ?? ""}`}
-            action={{ label: "Partager mon pseudo", onPress: onShareUsername }}
+            action={{ label: "Partager mon pseudo", onPress: onShareUsername, variant: "secondary" }}
           />
         ) : null}
 

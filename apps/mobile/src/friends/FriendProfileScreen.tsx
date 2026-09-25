@@ -17,6 +17,7 @@ import {
   SkyBackground,
   StepRing,
   formatKcal,
+  formatNumber,
   formatSteps,
   progressToNext,
 } from "@app/ui";
@@ -136,15 +137,37 @@ export function FriendProfileScreen() {
               <View className="items-center gap-4">
                 <Skeleton height={160} width={160} rounded />
                 <Skeleton height={20} width="60%" />
+                <View className="flex-row gap-2">
+                  <Skeleton height={36} width={36} rounded />
+                  <Skeleton height={36} width={36} rounded />
+                  <Skeleton height={36} width={36} rounded />
+                </View>
               </View>
             </LoadingState>
           </GlassCard>
         ) : null}
 
         {query.isError ? (
-          <GlassCard>
-            <ErrorState message="Vérifie ta connexion puis réessaie." onRetry={query.refetch} retrying={query.isFetching} />
-          </GlassCard>
+          <>
+            <GlassCard>
+              <View className="items-center gap-2">
+                <Monogram name={username} size={64} />
+                <AppText variant="title2">{username}</AppText>
+              </View>
+            </GlassCard>
+            <GlassCard>
+              <ErrorState message="Vérifie ta connexion puis réessaie." onRetry={query.refetch} retrying={query.isFetching} />
+            </GlassCard>
+            <View className="gap-2">
+              <Button label="Retirer de mes amis" variant="ghost" onPress={() => setSensitiveAction("remove")} />
+              <Button
+                label={`Bloquer ${username}`}
+                variant="destructive"
+                onPress={() => setSensitiveAction("block")}
+                accessibilityLabel={`Bloquer ${username}`}
+              />
+            </View>
+          </>
         ) : null}
 
         {query.data ? (
@@ -165,9 +188,11 @@ export function FriendProfileScreen() {
                     </AppText>
                   ) : (
                     <>
-                      <AppText variant="title1">{formatSteps(steps)}</AppText>
+                      <AppText variant="title2" numberOfLines={1} adjustsFontSizeToFit>
+                        {formatNumber(steps)}
+                      </AppText>
                       <AppText variant="footnote" color="textSecondary">
-                        aujourd'hui
+                        pas aujourd'hui
                       </AppText>
                     </>
                   )}
@@ -206,6 +231,7 @@ export function FriendProfileScreen() {
             {history.length > 0 ? (
               <GlassCard>
                 <View className="gap-3">
+                  <AppText variant="headline">Ses 7 derniers jours</AppText>
                   {history.map((day) => (
                     <View key={day.date} className="gap-1">
                       <AppText variant="footnote" color="textSecondary">
@@ -225,7 +251,12 @@ export function FriendProfileScreen() {
 
             <View className="gap-2">
               <Button label="Retirer de mes amis" variant="ghost" onPress={() => setSensitiveAction("remove")} />
-              <Button label="Bloquer" variant="destructive" onPress={() => setSensitiveAction("block")} accessibilityLabel={`Bloquer ${username}`} />
+              <Button
+                label={`Bloquer ${username}`}
+                variant="destructive"
+                onPress={() => setSensitiveAction("block")}
+                accessibilityLabel={`Bloquer ${username}`}
+              />
             </View>
           </>
         ) : null}

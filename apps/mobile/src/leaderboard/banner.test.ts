@@ -63,10 +63,10 @@ describe("leaderboardBannerText", () => {
     expect(leaderboardBannerText({ kind: "leading" }, "daily")).toBe("Tu mènes la journée. Belle régularité !");
     expect(leaderboardBannerText({ kind: "leading" }, "weekly")).toBe("Tu mènes la semaine. Belle régularité !");
     expect(leaderboardBannerText({ kind: "tiedLead", username: "sam.b" }, "daily")).toBe(
-      "Tu partages la tête avec sam.b.",
+      "Tu partages la tête avec sam.b",
     );
     expect(leaderboardBannerText({ kind: "overtake", username: "lea", steps: 1201 }, "daily")).toBe(
-      "Encore 1 201 pas pour dépasser lea.",
+      "Encore 1 201 pas pour dépasser lea",
     );
     expect(leaderboardBannerText({ kind: "none" }, "daily")).toBeNull();
   });

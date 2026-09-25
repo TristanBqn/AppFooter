@@ -1,17 +1,19 @@
 import { useRef, useState } from "react";
 import { Dimensions, ScrollView, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 import { router } from "expo-router";
-import { AppText, Button, SkyBackground } from "@app/ui";
+import { AppText, Button, Illustration, SkyBackground } from "@app/ui";
 import { lightColors } from "@app/ui/tokens";
 
 // Onboarding (2 pages, DESIGN.md §1) : la page 3 (consentement santé) est un écran séparé,
 // affiché après la connexion Apple et le choix du pseudo (précision du lead).
 const PAGES = [
   {
+    illustration: "sunrise",
     title: "Marche, tout simplement",
     text: "Footer compte tes pas et te propose une petite compétition amicale avec tes proches.",
   },
   {
+    illustration: "together",
     title: "Entre proches, sans pression",
     text: "Tu ne vois que tes amis, et eux ne voient que toi. Pas de classement public.",
   },
@@ -62,6 +64,7 @@ export default function OnboardingScreen() {
               accessible
               accessibilityLabel={`Page ${index + 1} sur ${PAGES.length}. ${p.title}. ${p.text}`}
             >
+              <Illustration kind={p.illustration} />
               <AppText variant="title1" style={{ textAlign: "center" }}>
                 {p.title}
               </AppText>

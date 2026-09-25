@@ -8,6 +8,7 @@ import { api, PRIVACY_URL } from "../../src/api/endpoints";
 import { ApiClientError } from "../../src/api/errors";
 import { getHealthSource } from "../../src/health";
 import { useToast } from "../../src/hooks/useToast";
+import { emitGlobalToast } from "../../src/toastEvents";
 
 // Consentement santé (RGPD art. 9), écran dédié et séparé des CGU (DESIGN.md §1, screens.md §1
 // page 3). Affiché une seule fois, juste après le choix du pseudo (voir authStage.ts et
@@ -45,8 +46,10 @@ export default function ConsentementScreen() {
   // « Pas maintenant » (screens.md §1) : aucune synchro, aucun appel HealthKit, retour à l'Accueil
   // (pas à l'onboarding, le consentement est affiché après la connexion et le pseudo) avec le
   // toast rassurant exact du document ; l'Accueil s'affiche en état vide « consentement absent ».
+  // M3 : `emitGlobalToast` (pas le `useToast` local, démonté par la navigation) — l'Accueil s'y
+  // abonne via `onGlobalToast` et affiche le message une fois monté.
   function onDecline() {
-    showToast(DECLINE_MESSAGE, "info");
+    emitGlobalToast(DECLINE_MESSAGE, "info");
     goToAccueil();
   }
 

@@ -13,3 +13,9 @@ export function formatLocalTime(date: Date): string {
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 }
+
+/** "08:00" -> "8 h 00", "22:05" -> "22 h 05" (m4 : pas de zéro initial sur l'heure). */
+export function formatQuietHour(value: string): string {
+  const [hours, minutes] = value.split(":");
+  return `${Number(hours)} h ${minutes}`;
+}

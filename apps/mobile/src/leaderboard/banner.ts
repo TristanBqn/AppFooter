@@ -32,9 +32,10 @@ export function leaderboardBannerText(banner: LeaderboardBanner, period: Leaderb
     case "leading":
       return `Tu mènes la ${period === "daily" ? "journée" : "semaine"}. Belle régularité !`;
     case "tiedLead":
-      return `Tu partages la tête avec ${banner.username}.`;
+      // m5 : harmonisé sans point final, comme l'Accueil et l'exemple de screens.md §5.
+      return `Tu partages la tête avec ${banner.username}`;
     case "overtake":
-      return `Encore ${formatSteps(banner.steps)} pour dépasser ${banner.username}.`;
+      return `Encore ${formatSteps(banner.steps)} pour dépasser ${banner.username}`;
     case "none":
       return null;
   }

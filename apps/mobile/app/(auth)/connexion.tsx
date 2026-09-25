@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { View } from "react-native";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { router, useLocalSearchParams } from "expo-router";
-import { AppText, Button, SkyBackground } from "@app/ui";
+import { AppText, Button, Logo, SkyBackground } from "@app/ui";
 import { useAuth } from "../../src/auth/AuthProvider";
 import { AppleSignInCancelledError, signInWithApple } from "../../src/auth/appleSignIn";
 import { api } from "../../src/api/endpoints";
@@ -75,7 +75,7 @@ export default function ConnexionScreen() {
   return (
     <SkyBackground variant="dawn">
       <View className="flex-1 items-center justify-center gap-2 px-screen">
-        <AppText variant="largeTitle">Footer</AppText>
+        <Logo />
         <AppText variant="callout" color="textSecondary" style={{ textAlign: "center", marginBottom: 32 }}>
           Marche un peu plus, ensemble.
         </AppText>

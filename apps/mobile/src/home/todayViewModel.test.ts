@@ -16,23 +16,29 @@ const SERVER: TodayResponse = {
 
 const LOCAL = { date: "2026-09-25", steps: 8900, activeCalories: 320 };
 
+const BASE = { authLoading: false, isPending: false, isError: false, syncError: false, localToday: null };
+
 describe("buildTodayViewModel", () => {
+  it("M4 : /me pas encore chargé, peu importe le reste", () => {
+    expect(
+      buildTodayViewModel({ ...BASE, authLoading: true, hasHealthConsent: false, serverData: SERVER }),
+    ).toEqual({ kind: "loading" });
+  });
+
   it("santé non connectée : consentement absent, peu importe le reste", () => {
     expect(
-      buildTodayViewModel({ hasHealthConsent: false, isPending: false, isError: false, serverData: SERVER, localToday: LOCAL }),
+      buildTodayViewModel({ ...BASE, hasHealthConsent: false, serverData: SERVER, localToday: LOCAL }),
     ).toEqual({ kind: "noConsent" });
   });
 
   it("chargement initial", () => {
     expect(
-      buildTodayViewModel({ hasHealthConsent: true, isPending: true, isError: false, serverData: undefined, localToday: null }),
+      buildTodayViewModel({ ...BASE, hasHealthConsent: true, isPending: true, serverData: undefined }),
     ).toEqual({ kind: "loading" });
   });
 
   it("données serveur normales : pas de dégradation", () => {
-    expect(
-      buildTodayViewModel({ hasHealthConsent: true, isPending: false, isError: false, serverData: SERVER, localToday: null }),
-    ).toEqual({
+    expect(buildTodayViewModel({ ...BASE, hasHealthConsent: true, serverData: SERVER })).toEqual({
       kind: "data",
       steps: 8450,
       activeCalories: 312,
@@ -43,9 +49,9 @@ describe("buildTodayViewModel", () => {
     });
   });
 
-  it("erreur de synchro avec cache serveur : préfère la lecture locale pour les pas/calories, garde le rang", () => {
+  it("erreur de lecture avec cache serveur : préfère la lecture locale pour les pas/calories, garde le rang", () => {
     expect(
-      buildTodayViewModel({ hasHealthConsent: true, isPending: false, isError: true, serverData: SERVER, localToday: LOCAL }),
+      buildTodayViewModel({ ...BASE, hasHealthConsent: true, isError: true, serverData: SERVER, localToday: LOCAL }),
     ).toEqual({
       kind: "data",
       steps: 8900,
@@ -57,10 +63,8 @@ describe("buildTodayViewModel", () => {
     });
   });
 
-  it("erreur de synchro avec cache serveur mais sans lecture locale : garde les données serveur", () => {
-    expect(
-      buildTodayViewModel({ hasHealthConsent: true, isPending: false, isError: true, serverData: SERVER, localToday: null }),
-    ).toEqual({
+  it("erreur de lecture avec cache serveur mais sans lecture locale : garde les données serveur", () => {
+    expect(buildTodayViewModel({ ...BASE, hasHealthConsent: true, isError: true, serverData: SERVER })).toEqual({
       kind: "data",
       steps: 8450,
       activeCalories: 312,
@@ -71,9 +75,23 @@ describe("buildTodayViewModel", () => {
     });
   });
 
+  it("M5 : erreur de synchro (PUT /me/activity) seule, avec cache serveur et lecture locale : dégradé", () => {
+    expect(
+      buildTodayViewModel({ ...BASE, hasHealthConsent: true, syncError: true, serverData: SERVER, localToday: LOCAL }),
+    ).toEqual({
+      kind: "data",
+      steps: 8900,
+      activeCalories: 320,
+      rank: 2,
+      participants: 5,
+      lastSyncAt: "2026-09-25T08:00:00.000Z",
+      degraded: true,
+    });
+  });
+
   it("erreur totale sans aucun cache serveur mais lecture locale disponible : repli local, rang inconnu", () => {
     expect(
-      buildTodayViewModel({ hasHealthConsent: true, isPending: false, isError: true, serverData: undefined, localToday: LOCAL }),
+      buildTodayViewModel({ ...BASE, hasHealthConsent: true, isError: true, serverData: undefined, localToday: LOCAL }),
     ).toEqual({
       kind: "data",
       steps: 8900,
@@ -86,8 +104,8 @@ describe("buildTodayViewModel", () => {
   });
 
   it("erreur totale sans aucun repli : état d'erreur bloquant", () => {
-    expect(
-      buildTodayViewModel({ hasHealthConsent: true, isPending: false, isError: true, serverData: undefined, localToday: null }),
-    ).toEqual({ kind: "error" });
+    expect(buildTodayViewModel({ ...BASE, hasHealthConsent: true, isError: true, serverData: undefined })).toEqual({
+      kind: "error",
+    });
   });
 });

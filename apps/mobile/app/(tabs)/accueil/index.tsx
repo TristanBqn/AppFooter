@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SymbolView } from "expo-symbols";
 import { useQuery } from "@tanstack/react-query";
@@ -21,27 +21,27 @@ import {
   formatKcal,
   formatNumber,
   formatRank,
+  formatRankLabel,
   formatSteps,
   progressToNext,
 } from "@app/ui";
-import { lightColors } from "@app/ui/tokens";
+import { lightColors, radius } from "@app/ui/tokens";
 import { useAuth } from "../../../src/auth/AuthProvider";
 import { api } from "../../../src/api/endpoints";
-import { ApiClientError } from "../../../src/api/errors";
 import { encouragementText } from "../../../src/encouragements/catalog";
 import { RECEIVED_ENCOURAGEMENTS_QUERY_KEY } from "../../../src/encouragements/queryKeys";
 import { hasEncouragementOn, sortByMostRecent, type ReceivedEncouragement } from "../../../src/encouragements/receivedView";
-import { getHealthSource } from "../../../src/health";
 import { formatHeaderDate } from "../../../src/home/formatDate";
 import { buildNextFriendCard, type NextFriendCard } from "../../../src/home/nextFriendCard";
+import { buildRankTileViewModel, type RankTileViewModel } from "../../../src/home/rankTile";
 import { TODAY_QUERY_KEY } from "../../../src/home/todayQuery";
 import { buildTodayViewModel } from "../../../src/home/todayViewModel";
 import { LEADERBOARD_DAILY_QUERY_KEY } from "../../../src/leaderboard/queryKeys";
 import { useActivitySync } from "../../../src/sync/useActivitySync";
 import { useToast } from "../../../src/hooks/useToast";
+import { onGlobalToast } from "../../../src/toastEvents";
 
 // Accueil (M5/M8/M9, CA3/CA9, screens.md §4).
-const AUTHORIZE_ERROR = "Impossible d'activer Apple Santé pour l'instant. Vérifie ta connexion puis réessaie.";
 
 function currentLocalDate(timeZone: string): LocalDate {
   return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(
@@ -50,14 +50,20 @@ function currentLocalDate(timeZone: string): LocalDate {
 }
 
 export default function AccueilScreen() {
-  const { me, refresh } = useAuth();
+  const { me } = useAuth();
   const { showToast, toastElement } = useToast();
-  const [authorizing, setAuthorizing] = useState(false);
 
+  // Toast affiché ailleurs (ex. « Pas maintenant » du consentement, M3) : survit à la navigation
+  // vers l'Accueil, contrairement à un `useToast` local à l'écran d'origine (démonté entre-temps).
+  useEffect(() => onGlobalToast(showToast), [showToast]);
+
+  // `me === undefined` tant que `/me` n'a pas encore répondu (M4) : distinct de « consentement
+  // absent », qui ne peut être établi qu'une fois `me` connu.
+  const authLoading = me === undefined;
   const hasConsent = Boolean(me?.healthConsentAt);
   const timeZone = me?.timeZone ?? "Europe/Paris";
 
-  const { localToday, syncing, sync } = useActivitySync({
+  const { localToday, syncing, syncError, sync } = useActivitySync({
     enabled: hasConsent,
     timeZone,
     lastSyncAt: me?.lastSyncAt ?? null,
@@ -83,28 +89,20 @@ export default function AccueilScreen() {
   });
 
   const view = buildTodayViewModel({
+    authLoading,
     hasHealthConsent: hasConsent,
     isPending: todayQuery.isPending,
     isError: todayQuery.isError,
+    syncError: syncError !== null,
     serverData: todayQuery.data,
     localToday,
   });
 
-  async function onAuthorizeHealth() {
-    setAuthorizing(true);
-    try {
-      await api.me.setHealthConsent({ granted: true });
-      await refresh();
-      const source = getHealthSource();
-      if (await source.isAvailable()) {
-        await source.requestAuthorization();
-      }
-      await sync();
-    } catch (error) {
-      showToast(error instanceof ApiClientError ? error.userMessage : AUTHORIZE_ERROR);
-    } finally {
-      setAuthorizing(false);
-    }
+  // B1 : ouvre l'écran de consentement dédié, seul point d'envoi de `PUT /me/consents/health`.
+  // L'appel direct à HealthKit (sans passer par cet écran) reste réservé au cas « consentement
+  // Footer déjà donné, accès HealthKit refusé » (Paramètres > Accès à Apple Santé), pas à ce bouton.
+  function onAuthorizeHealth() {
+    router.push("/(auth)/consentement");
   }
 
   async function onRefresh() {
@@ -133,7 +131,11 @@ export default function AccueilScreen() {
               <AppText variant="subheadline" color="textSecondary">
                 {headerDate}
               </AppText>
-              <AppText variant="largeTitle">Bonjour {me?.username ?? ""}</AppText>
+              {me ? (
+                <AppText variant="largeTitle">Bonjour {me.username}</AppText>
+              ) : (
+                <Skeleton height={34} width="60%" />
+              )}
             </View>
             <Pressable
               role="button"
@@ -165,7 +167,7 @@ export default function AccueilScreen() {
                 illustration="sunrise"
                 title="Connecte Apple Santé pour voir tes pas"
                 message="Footer a besoin de ton accord pour compter tes pas et tes calories."
-                action={{ label: "Autoriser l'accès", onPress: onAuthorizeHealth, loading: authorizing }}
+                action={{ label: "Autoriser l'accès", onPress: onAuthorizeHealth }}
               />
             </GlassCard>
           ) : null}
@@ -177,14 +179,24 @@ export default function AccueilScreen() {
           ) : null}
 
           {view.kind === "data" ? (
-            <TodayCard steps={view.steps} activeCalories={view.activeCalories} rank={view.rank} participants={view.participants} degraded={view.degraded} />
+            <TodayCard
+              steps={view.steps}
+              activeCalories={view.activeCalories}
+              rankTile={buildRankTileViewModel(leaderboardQuery.data?.entries, {
+                rank: view.rank,
+                participants: view.participants,
+              })}
+              degraded={view.degraded}
+            />
           ) : null}
 
           {view.kind === "data" ? <NextFriendCardView card={nextFriendCard} myUsername={me?.username ?? ""} /> : null}
 
           {showEncouragementsCard ? <EncouragementsReceivedCard items={receivedItems.slice(0, 3)} /> : null}
 
-          <ListRow title="Tes 30 derniers jours" onPress={() => router.push("/(tabs)/accueil/historique")} />
+          <GlassCard>
+            <ListRow title="Tes 30 derniers jours" onPress={() => router.push("/(tabs)/accueil/historique")} />
+          </GlassCard>
         </ScrollView>
       </SafeAreaView>
       {toastElement}
@@ -195,12 +207,11 @@ export default function AccueilScreen() {
 type TodayCardProps = {
   steps: number;
   activeCalories: number;
-  rank: number | null;
-  participants: number | null;
+  rankTile: RankTileViewModel;
   degraded: boolean;
 };
 
-function TodayCard({ steps, activeCalories, rank, participants, degraded }: TodayCardProps) {
+function TodayCard({ steps, activeCalories, rankTile, degraded }: TodayCardProps) {
   const progress = progressToNext(steps, STEP_MILESTONES);
 
   // Franchissement d'un seuil pendant que l'écran est ouvert (screens.md §4) : annonce VoiceOver
@@ -228,11 +239,11 @@ function TodayCard({ steps, activeCalories, rank, participants, degraded }: Toda
   return (
     <View className="gap-4">
       {degraded ? (
-        <GlassCard tone="strong">
+        <View style={styles.warningBanner}>
           <AppText variant="footnote" color="warning">
             Tes amis verront ce total dès que la connexion revient.
           </AppText>
-        </GlassCard>
+        </View>
       ) : null}
 
       <GlassCard>
@@ -254,25 +265,41 @@ function TodayCard({ steps, activeCalories, rank, participants, degraded }: Toda
       <GlassCard>
         <View className="flex-row gap-4">
           <StatTile label="Calories actives" value={formatKcal(activeCalories)} />
-          {rank !== null && participants !== null && participants > 1 ? (
-            <StatTile
-              label="Rang du jour"
-              value={`${formatRank(rank)} sur ${participants}`}
-              accessibilityLabel={`Rang du jour, ${formatRank(rank)} sur ${participants} participants`}
-              onPress={() => router.push("/(tabs)/classement")}
-              accessibilityHint="Ouvre le classement"
-            />
-          ) : (
-            <StatTile
-              label="Amis"
-              value="Ajoute un ami"
-              onPress={() => router.push("/(tabs)/amis")}
-              accessibilityHint="Ouvre tes amis"
-            />
-          )}
+          <RankStatTile rankTile={rankTile} />
         </View>
       </GlassCard>
     </View>
+  );
+}
+
+/**
+ * Tuile « Rang du jour » (M6/M7) : « Amis » / « Ajoute un ami » sans ami, non pressable si le rang
+ * est vraiment inconnu (classement et /me/today tous deux en échec), « ex æquo » via `rankTile.tied`.
+ */
+function RankStatTile({ rankTile }: { rankTile: RankTileViewModel }) {
+  if (rankTile.kind === "noFriends") {
+    return (
+      <StatTile label="Amis" value="Ajoute un ami" onPress={() => router.push("/(tabs)/amis")} accessibilityHint="Ouvre tes amis" />
+    );
+  }
+
+  if (rankTile.kind === "unknown") {
+    return <StatTile label="Rang du jour" value="—" />;
+  }
+
+  const { rank, tied, participants } = rankTile;
+  const value = tied ? formatRankLabel(rank, true) : `${formatRank(rank)} sur ${participants}`;
+  const accessibilityLabel = tied
+    ? `Rang du jour, ${formatRankLabel(rank, true)}`
+    : `Rang du jour, ${formatRank(rank)} sur ${participants} participants`;
+  return (
+    <StatTile
+      label="Rang du jour"
+      value={value}
+      accessibilityLabel={accessibilityLabel}
+      onPress={() => router.push("/(tabs)/classement")}
+      accessibilityHint="Ouvre le classement"
+    />
   );
 }
 
@@ -298,17 +325,24 @@ function NextFriendCardView({ card, myUsername }: NextFriendCardViewProps) {
 function EncouragementsReceivedCard({ items }: { items: readonly ReceivedEncouragement[] }) {
   return (
     <GlassCard>
-      <View className="gap-1">
-        {items.map((item) => (
-          <ListRow key={item.id} title={item.from.username} subtitle={encouragementText(item.messageId)} leading={<Monogram name={item.from.username} />} />
-        ))}
-        <ListRow
-          title="Tout voir"
-          titleColor="accentText"
-          onPress={() => router.push("/(tabs)/accueil/encouragements")}
-          accessibilityHint="Affiche tes encouragements reçus des 7 derniers jours"
-        />
+      <View className="gap-2">
+        <AppText variant="headline">Encouragements reçus</AppText>
+        <View className="gap-1">
+          {items.map((item) => (
+            <ListRow key={item.id} title={item.from.username} subtitle={encouragementText(item.messageId)} leading={<Monogram name={item.from.username} />} />
+          ))}
+          <ListRow
+            title="Tout voir"
+            titleColor="accentText"
+            onPress={() => router.push("/(tabs)/accueil/encouragements")}
+            accessibilityHint="Affiche tes encouragements reçus des 7 derniers jours"
+          />
+        </View>
       </View>
     </GlassCard>
   );
 }
+
+const styles = StyleSheet.create({
+  warningBanner: { backgroundColor: lightColors.warningSoft, borderRadius: radius.md, padding: 12 },
+});

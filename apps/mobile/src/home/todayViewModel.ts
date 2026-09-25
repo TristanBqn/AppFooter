@@ -20,30 +20,41 @@ export type TodayViewModel =
     };
 
 export type BuildTodayViewModelParams = {
+  /** `true` tant que `/me` n'est pas encore chargé (M4) : prime sur `hasHealthConsent`, toujours
+   * `false` par défaut avant que la session ne soit connue. */
+  authLoading: boolean;
   hasHealthConsent: boolean;
   isPending: boolean;
   isError: boolean;
+  /** Dernière tentative de synchro (`useActivitySync`, lecture Santé + `PUT /me/activity`) en échec :
+   * distincte de `isError` (lecture de `GET /me/today`), l'une comme l'autre dégrade l'affichage (M5). */
+  syncError: boolean;
   serverData: TodayResponse | undefined;
   /** Dernière lecture locale du jour courant (HealthSource), indépendante du succès de l'envoi serveur. */
   localToday: DailyTotal | null;
 };
 
 export function buildTodayViewModel({
+  authLoading,
   hasHealthConsent,
   isPending,
   isError,
+  syncError,
   serverData,
   localToday,
 }: BuildTodayViewModelParams): TodayViewModel {
+  if (authLoading) return { kind: "loading" };
   if (!hasHealthConsent) return { kind: "noConsent" };
   if (isPending) return { kind: "loading" };
 
+  const hasError = isError || syncError;
+
   if (serverData) {
-    // Erreur de synchro sur des données serveur déjà connues (rafraîchissement en échec, cache
-    // conservé par TanStack Query) : préférer la lecture locale la plus fraîche pour le chiffre du
-    // jour si elle existe, tout en gardant rang/participants de la dernière synchro réussie
-    // (screens.md §4 « Erreur de synchro »).
-    const useLocal = isError && localToday !== null;
+    // Erreur de lecture ou de synchro sur des données serveur déjà connues (rafraîchissement en
+    // échec, cache conservé par TanStack Query) : préférer la lecture locale la plus fraîche pour
+    // le chiffre du jour si elle existe, tout en gardant rang/participants de la dernière synchro
+    // réussie (screens.md §4 « Erreur de synchro »).
+    const useLocal = hasError && localToday !== null;
     return {
       kind: "data",
       steps: useLocal ? localToday.steps : serverData.steps,
@@ -51,11 +62,11 @@ export function buildTodayViewModel({
       rank: serverData.rank,
       participants: serverData.participants,
       lastSyncAt: serverData.lastSyncAt,
-      degraded: isError,
+      degraded: hasError,
     };
   }
 
-  if (isError && localToday) {
+  if (hasError && localToday) {
     // Aucune lecture serveur disponible (premier chargement en échec) mais Santé locale lisible :
     // on affiche au moins les pas du jour plutôt qu'un écran d'erreur bloquant.
     return {
@@ -69,6 +80,6 @@ export function buildTodayViewModel({
     };
   }
 
-  if (isError) return { kind: "error" };
+  if (hasError) return { kind: "error" };
   return { kind: "loading" };
 }

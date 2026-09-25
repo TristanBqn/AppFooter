@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Linking, ScrollView, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
@@ -7,9 +7,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
 import type { Settings, UpdateSettingsRequest } from "@app/contracts";
 import { AppText, Button, ErrorState, GlassCard, ListRow, LoadingState, Skeleton, SkyBackground, SwitchRow } from "@app/ui";
+import { lightColors, radius } from "@app/ui/tokens";
 import { useAuth } from "../../../src/auth/AuthProvider";
 import { api, PRIVACY_URL } from "../../../src/api/endpoints";
-import { formatLocalTime, parseLocalTime } from "../../../src/settings/localTime";
+import { getAppVersion } from "../../../src/env";
+import { formatLocalTime, formatQuietHour, parseLocalTime } from "../../../src/settings/localTime";
 import { mergeSettings } from "../../../src/settings/mergeSettings";
 import { BLOCKS_QUERY_KEY, SETTINGS_QUERY_KEY } from "../../../src/settings/queryKeys";
 import { useToast } from "../../../src/hooks/useToast";
@@ -65,6 +67,7 @@ export default function ParametresScreen() {
 
   const settings = settingsQuery.data;
   const healthConnected = Boolean(me?.healthConsentAt);
+  const appVersion = getAppVersion();
 
   return (
     <SkyBackground variant="sky">
@@ -135,7 +138,7 @@ export default function ParametresScreen() {
                   NOTIFICATIONS
                 </AppText>
                 {notificationsBlocked ? (
-                  <View className="gap-2" style={{ paddingVertical: 8 }}>
+                  <View style={styles.warningBanner}>
                     <AppText variant="footnote" color="warning">
                       Les notifications sont désactivées pour Footer.
                     </AppText>
@@ -194,24 +197,40 @@ export default function ParametresScreen() {
             </GlassCard>
 
             <GlassCard>
-              <ListRow
-                title="Accès à Apple Santé"
-                value={healthConnected ? "Connecté" : "Non autorisé"}
-                onPress={() => Linking.openSettings()}
-              />
+              <View className="gap-1">
+                <AppText variant="footnote" color="textSecondary">
+                  APPLE SANTÉ
+                </AppText>
+                <ListRow
+                  title="Accès à Apple Santé"
+                  value={healthConnected ? "Connecté" : "Non autorisé"}
+                  onPress={() => Linking.openSettings()}
+                />
+              </View>
             </GlassCard>
 
             <GlassCard>
-              <ListRow
-                title="Comptes bloqués"
-                value={blocksQuery.data ? String(blocksQuery.data.blocked.length) : "…"}
-                onPress={() => router.push("/(tabs)/accueil/comptes-bloques")}
-              />
+              <View className="gap-1">
+                <AppText variant="footnote" color="textSecondary">
+                  COMPTES BLOQUÉS
+                </AppText>
+                <ListRow
+                  title="Comptes bloqués"
+                  value={blocksQuery.data ? String(blocksQuery.data.blocked.length) : "…"}
+                  onPress={() => router.push("/(tabs)/accueil/comptes-bloques")}
+                />
+              </View>
             </GlassCard>
 
             <GlassCard>
               <ListRow title="Supprimer mon compte" titleColor="danger" onPress={() => router.push("/(tabs)/accueil/supprimer-compte")} />
             </GlassCard>
+
+            {appVersion ? (
+              <AppText variant="footnote" color="textSecondary" style={{ textAlign: "center" }}>
+                Version {appVersion}
+              </AppText>
+            ) : null}
           </>
         ) : null}
       </ScrollView>
@@ -223,7 +242,7 @@ export default function ParametresScreen() {
 function QuietHoursRow({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
     <View className="flex-row items-center justify-between" style={{ minHeight: 44 }}>
-      <AppText variant="body">{`${label} ${value.replace(":", " h ")}`}</AppText>
+      <AppText variant="body">{`${label} ${formatQuietHour(value)}`}</AppText>
       <DateTimePicker
         mode="time"
         display="compact"
@@ -236,3 +255,12 @@ function QuietHoursRow({ label, value, onChange }: { label: string; value: strin
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  warningBanner: {
+    backgroundColor: lightColors.warningSoft,
+    borderRadius: radius.md,
+    padding: 12,
+    gap: 8,
+  },
+});

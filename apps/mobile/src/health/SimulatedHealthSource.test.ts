@@ -30,4 +30,22 @@ describe("SimulatedHealthSource", () => {
     const [day] = await source.getDailyTotals("2026-01-01", "2026-01-01", "Europe/Paris");
     expect(day).toEqual({ date: "2026-01-01", steps: 10_000, activeCalories: 500 });
   });
+
+  it("m7 : des jours vraiment distincts, pas quasi constants (mélange final fmix32)", async () => {
+    const source = new SimulatedHealthSource();
+    const days = await source.getDailyTotals("2026-01-01", "2026-01-30", "Europe/Paris");
+    const distinctValues = new Set(days.map((day) => day.steps));
+    // Avant fmix32, deux jours consécutifs ne différaient que de quelques unités sur 2^32 : la
+    // division par 0xffffffff les rendait quasi indiscernables une fois arrondis en pas.
+    expect(distinctValues.size).toBeGreaterThan(20);
+  });
+
+  it("m7 : jours au-dessus et en dessous d'un seuil (ex. 10 000 pas)", async () => {
+    // Options centrées sur le seuil (au lieu du défaut, dont l'amplitude n'atteint jamais tout à
+    // fait 10 000) : c'est cette configuration que reprend le script de captures (docs/design/review).
+    const source = new SimulatedHealthSource({ baseSteps: 9_000, variance: 3_000 });
+    const days = await source.getDailyTotals("2026-01-01", "2026-01-30", "Europe/Paris");
+    expect(days.some((day) => day.steps >= 10_000)).toBe(true);
+    expect(days.some((day) => day.steps < 10_000)).toBe(true);
+  });
 });
