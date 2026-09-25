@@ -16,7 +16,7 @@ export { ProgressBar, type ProgressBarProps } from "./components/ProgressBar";
 export { RankRow, type RankRowProps } from "./components/RankRow";
 export { Monogram, type MonogramProps } from "./components/Monogram";
 export { SegmentedControl, type SegmentedControlProps, type SegmentOption } from "./components/SegmentedControl";
-export { ListRow, SwitchRow, type ListRowProps, type SwitchRowProps } from "./components/ListRow";
+export { ListRow, SwitchRow, SunBadge, type ListRowProps, type SwitchRowProps } from "./components/ListRow";
 export { Chip, StatTile, type ChipProps, type StatTileProps } from "./components/Chip";
 export {
   Skeleton,

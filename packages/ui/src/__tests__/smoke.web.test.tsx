@@ -41,7 +41,13 @@ describe("rendu web", () => {
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain('aria-disabled="true"');
     expect(html).toContain('role="heading"');
-    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('aria-hidden="true"');  });
+
+  it("StatTile pressable et pastille de tête de ListRow", () => {
+    const { html } = renderApp();
+    expect(html).toMatch(/role="button"[^>]*aria-label="Rang du jour, 2e"|aria-label="Rang du jour, 2e"[^>]*role="button"/);
+    expect(html).toMatch(/aria-label="Calories actives, 312 kcal"(?![^>]*role="button")/);
+    expect(html).toContain('aria-label="Jeudi 24 sept., 312 kcal, 10 450 pas, palier de 10 000 franchi"');
   });
 
   it("utilise une pile de polices de repli sur le web", () => {

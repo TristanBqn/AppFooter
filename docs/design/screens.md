@@ -55,19 +55,19 @@ Règle : aucun texte gris clair, aucun texte posé directement sur un nuage déc
 
 ---
 
-## 1. Onboarding (3 pages) + consentement santé
+## 1. Onboarding (2 pages) + consentement santé
 
 **But** : comprendre Footer en 20 secondes, puis consentir explicitement au traitement des pas (RGPD art. 9) avant toute synchro.
 
-Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « Page 1 sur 3 »), bouton `primary` en bas, « Passer » (`ghost`) en haut à droite sur les pages 1–2.
+Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « Page 1 sur 2 »), bouton `primary` en bas, « Passer » (`ghost`) en haut à droite. Le consentement n'est pas une page de l'onboarding : c'est un écran dédié, affiché après la connexion et le pseudonyme.
 
 | Page | Illustration | Titre (`title1`) | Texte (`callout`) | Action |
 |---|---|---|---|---|
 | 1 | `Illustration sunrise` | Marche, tout simplement | Footer compte tes pas et te propose une petite compétition amicale avec tes proches. | Continuer |
 | 2 | `Illustration together` | Entre proches, sans pression | Tu ne vois que tes amis, et eux ne voient que toi. Pas de classement public. | Continuer |
-| 3 | `Illustration privacy` | Ce que Footer utilise | voir ci-dessous | J'accepte et je continue |
+| Consentement (écran dédié) | `Illustration privacy` | Ce que Footer utilise | voir ci-dessous | J'accepte et je continue |
 
-**Page 3 : consentement santé (écran dédié, séparé des CGU)**
+**Consentement santé (écran dédié, séparé des CGU, après connexion et pseudonyme)**
 - `GlassCard` avec liste à puces :
   - « Tes pas et tes calories actives de chaque jour, lus dans Apple Santé. »
   - « Seulement les totaux quotidiens, jamais le détail de tes mouvements. »
@@ -77,9 +77,9 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
 - Lien `ghost` « Lire la politique de confidentialité » (ouvre la page statique de l'API dans un navigateur intégré).
 - Case à cocher explicite (`SwitchRow`) : « J'accepte que Footer traite mes données de pas et de calories » — **désactivée par défaut**. Le bouton principal reste désactivé tant qu'elle n'est pas activée (VoiceOver : « J'accepte et je continue, désactivé. Active d'abord l'accord ci-dessus. »).
 - Au clic : demande système HealthKit. Si l'utilisateur refuse l'accès dans la feuille iOS : écran d'information « Footer a besoin de tes pas pour fonctionner. Tu peux l'autoriser dans Réglages > Santé > Accès aux données > Footer. » + bouton `secondary` « Ouvrir Réglages » + `ghost` « Plus tard » (l'app reste utilisable, Accueil en état vide « Santé non connectée »).
-- Refus du consentement Footer : pas de synchro ; bouton « Pas maintenant » (`ghost`) ramène à la page 2 avec message « Sans cet accord, Footer ne peut pas compter tes pas. Tu pourras changer d'avis plus tard. »
+- Refus du consentement Footer : bouton « Pas maintenant » (`ghost`) ; aucune synchro, aucun appel HealthKit. Retour à l'**Accueil** (pas à l'onboarding) avec `Toast tone="info"` rassurant « Pas de souci. Footer ne lira pas tes pas sans ton accord. Tu peux l'activer quand tu veux. » ; l'Accueil s'affiche en état vide « consentement absent » (§4), dont l'action « Autoriser l'accès » rouvre cet écran. Le choix n'est pas redemandé automatiquement à chaque lancement.
 
-**Ordre du flux** : Onboarding 1–2 → Connexion Apple → Pseudonyme → Consentement (page 3) → Accueil. *(Hypothèse designer : consentement après la connexion pour pouvoir l'horodater côté serveur ; voir points ouverts.)*
+**Ordre du flux** : Onboarding 1–2 → Connexion Apple → Pseudonyme → Consentement → Accueil (accord ou « Pas maintenant »). Consentement après la connexion pour l'horodater côté serveur (décision lead).
 
 ## 2. Connexion avec Apple
 
@@ -115,14 +115,14 @@ Fond `SkyBackground dawn`. Pagination horizontale (points de page, VoiceOver « 
    - 0 pas : « Ta journée commence. Chaque pas compte. » ;
    - VoiceOver anneau : label « Progression vers 10 000 pas », valeur « 8 450 pas sur 10 000 ».
    - Franchissement d'un seuil pendant que l'écran est ouvert : léger halo soleil autour de l'anneau (`celebrate`, 900 ms) + annonce « Palier de 10 000 pas franchi ». Aucun effet si animations réduites (annonce conservée).
-3. **Carte indicateurs** : deux `StatTile` côte à côte (empilés en grand texte) : « Calories actives » / « 312 kcal » ; « Rang du jour » / « 2e sur 5 » (ou « 2e ex æquo »). Toucher la tuile rang → onglet Classement. Sans ami : tuile « Rang du jour » remplacée par « Amis » / « Ajoute un ami » (→ onglet Amis).
+3. **Carte indicateurs** : deux `StatTile` côte à côte (empilés en grand texte) : « Calories actives » / « 312 kcal » ; « Rang du jour » / « 2e sur 5 » (ou « 2e ex æquo »). Toucher la tuile rang → onglet Classement (`StatTile onPress`, chevron discret, hint « Ouvre le classement »). Sans ami : tuile « Rang du jour » remplacée par « Amis » / « Ajoute un ami » (→ onglet Amis, hint « Ouvre tes amis »). La tuile calories n'est pas pressable.
 4. **Carte « prochain ami »** (`ListRow` pressable + `Monogram`) : « Encore 1 201 pas » / « pour dépasser lea » → Classement. Si je suis 1er seul : « Tu mènes la journée » / « Profite de ta balade ». Si 1er ex æquo : « Tu partages la tête avec sam.b ». Masquée sans ami.
 5. **Encouragements reçus** (carte visible s'il y en a aujourd'hui) : `ListRow` + `Monogram` « lea » / « Bravo pour ta marche ! » (3 derniers) ; lien `ghost` « Tout voir » → liste des encouragements reçus (7 derniers jours, même format, état vide `calm` « Aucun encouragement pour l'instant. Et si tu en envoyais un ? »).
 6. **Lien historique** : `ListRow` « Tes 30 derniers jours » → Historique.
 
 **États**
 - Chargement : squelette anneau (cercle `Skeleton` 240) + 2 tuiles. VoiceOver « Chargement de ton activité ».
-- Santé non connectée / consentement absent : `EmptyState` soleil « Connecte Apple Santé pour voir tes pas », action « Autoriser l'accès ».
+- Santé non connectée / consentement absent : `EmptyState` soleil « Connecte Apple Santé pour voir tes pas », message « Footer ne lit rien sans ton accord. », action « Autoriser l'accès » (consentement absent → écran de consentement ; accès HealthKit refusé → écran d'information Réglages du §1).
 - Aucune donnée aujourd'hui (Santé connectée) : anneau vide + « Ta journée commence. Chaque pas compte. » (pas un état d'erreur).
 - Erreur de synchro : on affiche les pas lus localement dans Santé + bandeau `warningSoft` « Tes amis verront ce total dès que la connexion revient. » ; erreur totale : `ErrorState` « Vérifie ta connexion puis tire vers le bas pour réessayer. »
 
@@ -179,7 +179,7 @@ Push depuis Classement ou Amis. Titre de navigation : pseudo.
 Push depuis l'Accueil. Titre « Ton historique ».
 
 1. **Résumé** (`GlassCard`) : « Moyenne : 7 830 pas / jour » ; « Meilleur jour : 14 210 pas, le 12 septembre ». Jamais de « série perdue ».
-2. **Liste** : 30 `ListRow` (jour récent en haut) : titre « Jeudi 24 sept. », valeur « 8 450 pas », sous-titre « 312 kcal » ; `ProgressBar` fine sous chaque ligne (relative au meilleur jour). Seuil de 10 000 franchi : petite pastille soleil décorative (VoiceOver : « palier de 10 000 franchi »).
+2. **Liste** : 30 `ListRow` (jour récent en haut) : titre « Jeudi 24 sept. », valeur « 8 450 pas », sous-titre « 312 kcal » ; `ProgressBar` fine sous chaque ligne (relative au meilleur jour). Seuil de 10 000 franchi : `ListRow leading={<SunBadge />}` + `leadingLabel="palier de 10 000 franchi"` (pastille masquée à VoiceOver, sens ajouté au libellé de la ligne). Jours sans palier : pas de `leading` (le texte reste aligné, pas d'emplacement vide).
 3. Jours sans donnée : « Pas de données » en `textSecondary` (pas « 0 pas » si Santé n'a rien renvoyé).
 
 **États** : chargement (8 lignes squelette) ; vide (`calm`) « Ton historique se construit jour après jour » ; erreur standard.
@@ -238,7 +238,7 @@ Push depuis Paramètres. Titre « Supprimer mon compte ».
 - Revue visuelle web : `pnpm --filter @app/ui gallery` construit la galerie des composants avec react-native-web et écrit `docs/design/review/gallery*.png` (normal, feuille ouverte, animations réduites).
 
 ## Points ouverts
-1. **Ordre consentement / connexion** : (A) consentement après connexion (retenu : horodatage serveur possible) ; (B) avant connexion (stocké localement puis transmis). À trancher par le lead.
+1. ~~Ordre consentement / connexion~~ : réglé, consentement après connexion et pseudonyme ; « Pas maintenant » → Accueil (§1).
 2. ~~Catalogue et seuils~~ : réglé (`ENCOURAGEMENT_CATALOG`, `STEP_MILESTONES`, `encouragedToday` dans `@app/contracts`). `encouragedToday` n'est pas sur les entrées du classement : non nécessaire, le profil ami le lit depuis GET /friends.
 3. ~~Demandes désactivées~~ : réglé par l'ADR 005 (réponse 202 neutre, demande cachée).
 4. ~~Logo~~ : livré (D4), voir §11.

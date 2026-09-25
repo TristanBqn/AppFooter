@@ -44,19 +44,62 @@ export type StatTileProps = {
   value: string;
   /** Lecture VoiceOver si différente, ex. « Calories actives, 312 kilocalories ». */
   accessibilityLabel?: string;
+  /** Rend la tuile pressable (bouton), ex. rang du jour → Classement. */
+  onPress?: () => void;
+  /** Conséquence du toucher, ex. « Ouvre le classement ». Ignoré sans `onPress`. */
+  accessibilityHint?: string;
 };
 
-/** Petit indicateur chiffré (calories, rang du jour). */
-export function StatTile({ label, value, accessibilityLabel }: StatTileProps) {
-  return (
-    <View style={styles.tile} accessible aria-label={accessibilityLabel ?? `${label}, ${value}`}>
-      <AppText variant="footnote" color="textSecondary">
-        {label}
-      </AppText>
+/** Petit indicateur chiffré (calories, rang du jour). Pressable si `onPress` est fourni. */
+export function StatTile({ label, value, accessibilityLabel, onPress, accessibilityHint }: StatTileProps) {
+  const reduced = useReducedMotion();
+  const a11yLabel = accessibilityLabel ?? `${label}, ${value}`;
+  const content = (
+    <>
+      {onPress ? (
+        <View style={styles.tileLabel}>
+          <AppText variant="footnote" color="textSecondary" style={styles.tileLabelText}>
+            {label}
+          </AppText>
+          <AppText variant="footnote" color="textSecondary" aria-hidden>
+            ›
+          </AppText>
+        </View>
+      ) : (
+        <AppText variant="footnote" color="textSecondary">
+          {label}
+        </AppText>
+      )}
       <AppText variant="title2" style={styles.value}>
         {value}
       </AppText>
-    </View>
+    </>
+  );
+
+  if (!onPress) {
+    return (
+      <View style={styles.tile} accessible aria-label={a11yLabel}>
+        {content}
+      </View>
+    );
+  }
+
+  return (
+    <Pressable
+      role="button"
+      aria-label={a11yLabel}
+      accessibilityHint={accessibilityHint}
+      onPress={onPress}
+      hitSlop={space[2]}
+      style={({ pressed }) => [
+        styles.tile,
+        styles.tilePressable,
+        pressed && styles.tilePressed,
+        pressed && !reduced ? { transform: [{ scale: motion.pressedScale }] } : null,
+      ]}
+    >
+      {content}
+    </Pressable>
   );
 }
 
@@ -73,5 +116,9 @@ const styles = StyleSheet.create({
   pressed: { backgroundColor: lightColors.accentSoftPressed },
   disabled: { backgroundColor: lightColors.surfaceOpaque },
   tile: { flex: 1, gap: space[1] },
+  tileLabel: { flexDirection: "row", alignItems: "center", gap: space[1] },
+  tileLabelText: { flexShrink: 1 },
+  tilePressable: { minHeight: layout.minTouch, justifyContent: "center" },
+  tilePressed: { opacity: 0.6 },
   value: { fontVariant: ["tabular-nums"] },
 });

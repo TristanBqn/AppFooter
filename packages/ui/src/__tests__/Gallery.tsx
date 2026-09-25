@@ -20,6 +20,7 @@ import {
   SkyBackground,
   StatTile,
   StepRing,
+  SunBadge,
   SwitchRow,
   TextField,
   Toast,
@@ -58,7 +59,7 @@ export function Gallery({ withSheet = false }: { withSheet?: boolean }) {
         <GlassCard>
           <View style={styles.row}>
             <StatTile label="Calories actives" value="312 kcal" />
-            <StatTile label="Rang du jour" value="2e" />
+            <StatTile label="Rang du jour" value="2e" onPress={() => undefined} accessibilityHint="Ouvre le classement" />
           </View>
         </GlassCard>
         <SegmentedControl
@@ -102,6 +103,7 @@ export function Gallery({ withSheet = false }: { withSheet?: boolean }) {
             trailing={<Button label="Accepter" size="compact" variant="secondary" onPress={() => undefined} />}
           />
           <SwitchRow title="Afficher mes calories à mes amis" subtitle="Sinon, seuls tes pas sont visibles." value onValueChange={() => undefined} />
+          <ListRow title="Jeudi 24 sept." subtitle="312 kcal" value="10 450 pas" leading={<SunBadge />} leadingLabel="palier de 10 000 franchi" />
           <ListRow title="Heures silencieuses" value="22 h – 8 h" onPress={() => undefined} />
         </GlassCard>
         <GlassCard>
