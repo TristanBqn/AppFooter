@@ -1,5 +1,6 @@
-// Demandes d'amitié et amis (F7-F9, CA7, CA8, ADR 005). Réponse neutre à l'ajout d'ami : le
-// pipeline de notification (« demande reçue », « demande acceptée ») sera branché en B9.
+// Demandes d'amitié et amis (F7-F9, CA7, CA8, ADR 005). Notifications « demande reçue » /
+// « demande acceptée » via `notify()` (ADR 004) : jamais pour une demande cachée (ni notifiée
+// ni visible de la cible).
 import type {
   AcceptFriendRequestResponse,
   CreateFriendRequestResponse,
@@ -8,13 +9,16 @@ import type {
   FriendRequestsResponse,
   FriendsResponse,
 } from "@app/contracts";
-import { FRIEND_HISTORY_DAYS, MAX_FRIENDS, MAX_PENDING_OUTGOING_REQUESTS } from "@app/contracts";
+import { FRIEND_HISTORY_DAYS, FRIEND_REQUESTS_PER_DAY, MAX_PENDING_OUTGOING_REQUESTS } from "@app/contracts";
 import type { Db } from "@app/db";
 import { schema } from "@app/db";
-import { and, desc, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lt, lte } from "drizzle-orm";
 import { addDaysToLocalDate, localDate } from "../../domain/local-date";
+import { zonedDateTimeToInstant } from "../../domain/quiet-hours";
 import { AppError } from "../../errors";
 import { isUniqueViolation } from "../../lib/db-errors";
+import { notify } from "../notifications/service";
+import type { PushTransport } from "../notifications/transport";
 
 interface UserRow {
   id: string;
@@ -58,6 +62,21 @@ async function areFriends(db: Db, userId: string, friendId: string): Promise<boo
 
 async function countFriends(db: Db, userId: string): Promise<number> {
   const rows = await db.select({ friendId: schema.friendships.friendId }).from(schema.friendships).where(eq(schema.friendships.userId, userId));
+  return rows.length;
+}
+
+/**
+ * Quota métier exact (survit aux redémarrages, ADR 007) : nombre de demandes réellement créées
+ * par l'expéditeur depuis le début de son jour civil local — pas un débit HTTP en mémoire.
+ */
+async function countFriendRequestsSentToday(db: Db, senderId: string, senderTimeZone: string, now: Date): Promise<number> {
+  const today = localDate(now, senderTimeZone);
+  const dayStart = zonedDateTimeToInstant(today, "00:00", senderTimeZone);
+  const dayEnd = zonedDateTimeToInstant(addDaysToLocalDate(today, 1), "00:00", senderTimeZone);
+  const rows = await db
+    .select({ id: schema.friendRequests.id })
+    .from(schema.friendRequests)
+    .where(and(eq(schema.friendRequests.senderId, senderId), gte(schema.friendRequests.createdAt, dayStart), lt(schema.friendRequests.createdAt, dayEnd)));
   return rows.length;
 }
 
@@ -105,7 +124,15 @@ async function buildFriendView(db: Db, meId: string, meTimeZone: string, friendI
  * soit le résultat réel (pseudo inconnu, cible bloquante, refus, demande réellement créée) —
  * seules exceptions : 422 CANNOT_TARGET_SELF, 409 TARGET_BLOCKED (si *je* bloque la cible).
  */
-export async function createFriendRequest(db: Db, senderId: string, targetUsername: string, now: Date): Promise<CreateFriendRequestResponse> {
+export async function createFriendRequest(
+  db: Db,
+  transport: PushTransport,
+  senderId: string,
+  senderUsername: string,
+  targetUsername: string,
+  now: Date,
+  maxFriends: number,
+): Promise<CreateFriendRequestResponse> {
   const target = await findUserByUsername(db, targetUsername);
   if (!target) return { status: "requested" }; // pseudo inconnu : rien n'est créé.
 
@@ -133,7 +160,7 @@ export async function createFriendRequest(db: Db, senderId: string, targetUserna
   if (reverse) {
     const [senderCount, targetCount] = await Promise.all([countFriends(db, senderId), countFriends(db, target.id)]);
     // Au-delà de la limite : la demande inverse reste en attente, réponse neutre inchangée.
-    if (senderCount < MAX_FRIENDS && targetCount < MAX_FRIENDS) {
+    if (senderCount < maxFriends && targetCount < maxFriends) {
       await db.transaction(async (tx) => {
         await tx.delete(schema.friendRequests).where(eq(schema.friendRequests.id, reverse.id));
         await tx.insert(schema.friendships).values([
@@ -141,6 +168,15 @@ export async function createFriendRequest(db: Db, senderId: string, targetUserna
           { userId: target.id, friendId: senderId, createdAt: now },
         ]);
       });
+      await notify(
+        db,
+        transport,
+        target.id,
+        "friend_request_accepted",
+        { type: "friend_request_accepted", fromUserId: senderId, fromUsername: senderUsername },
+        senderId,
+        now,
+      );
     }
     return { status: "requested" };
   }
@@ -153,14 +189,36 @@ export async function createFriendRequest(db: Db, senderId: string, targetUserna
     return { status: "requested" }; // borne de sécurité (pas de pagination en V1), pas d'erreur exposée.
   }
 
+  // Quota exact en base (ADR 007), pas un débit HTTP en mémoire : exception explicite au
+  // 202 neutre (ADR 005 l'autorise pour 429).
+  const sender = await findUserById(db, senderId);
+  if (!sender) throw new AppError("UNAUTHENTICATED", "Utilisateur introuvable");
+  if ((await countFriendRequestsSentToday(db, senderId, sender.timeZone, now)) >= FRIEND_REQUESTS_PER_DAY) {
+    throw new AppError("RATE_LIMITED", "Trop de demandes d'amitié envoyées aujourd'hui");
+  }
+
   // Cachée si la cible me bloque ou refuse les demandes : jamais notifiée ni visible d'elle ;
   // l'expéditeur ne distingue donc pas « bloqué / refuse » de « en attente ».
   const hidden = (await isBlocking(db, target.id, senderId)) || !(await acceptsFriendRequests(db, target.id));
 
+  let created = false;
   try {
     await db.insert(schema.friendRequests).values({ senderId, recipientId: target.id, hidden, createdAt: now });
+    created = true;
   } catch (err) {
     if (!isUniqueViolation(err)) throw err; // demande déjà en attente : idempotent.
+  }
+
+  if (created && !hidden) {
+    await notify(
+      db,
+      transport,
+      target.id,
+      "friend_request_received",
+      { type: "friend_request_received", fromUserId: senderId, fromUsername: senderUsername },
+      senderId,
+      now,
+    );
   }
 
   return { status: "requested" };
@@ -205,7 +263,14 @@ export async function listFriendRequests(db: Db, userId: string): Promise<Friend
 }
 
 /** 404 si la demande ne m'est pas adressée (visible) — jamais 403 (ADR 005). */
-export async function acceptFriendRequest(db: Db, userId: string, requestId: string, now: Date): Promise<AcceptFriendRequestResponse> {
+export async function acceptFriendRequest(
+  db: Db,
+  transport: PushTransport,
+  userId: string,
+  requestId: string,
+  now: Date,
+  maxFriends: number,
+): Promise<AcceptFriendRequestResponse> {
   const [request] = await db
     .select()
     .from(schema.friendRequests)
@@ -219,7 +284,7 @@ export async function acceptFriendRequest(db: Db, userId: string, requestId: str
   if (!request) throw new AppError("NOT_FOUND", "Demande introuvable");
 
   const [senderCount, recipientCount] = await Promise.all([countFriends(db, request.senderId), countFriends(db, userId)]);
-  if (senderCount >= MAX_FRIENDS || recipientCount >= MAX_FRIENDS) {
+  if (senderCount >= maxFriends || recipientCount >= maxFriends) {
     throw new AppError("FRIEND_LIMIT_REACHED", "Limite d'amis atteinte");
   }
 
@@ -232,7 +297,18 @@ export async function acceptFriendRequest(db: Db, userId: string, requestId: str
   });
 
   const me = await findUserById(db, userId);
-  if (!me) throw new AppError("UNAUTHENTICATED", "Utilisateur introuvable");
+  if (!me || !me.username) throw new AppError("UNAUTHENTICATED", "Utilisateur introuvable");
+
+  await notify(
+    db,
+    transport,
+    request.senderId,
+    "friend_request_accepted",
+    { type: "friend_request_accepted", fromUserId: userId, fromUsername: me.username },
+    userId,
+    now,
+  );
+
   const friend = await buildFriendView(db, userId, me.timeZone, request.senderId, now, now);
   return { friend };
 }

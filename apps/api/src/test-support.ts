@@ -4,6 +4,8 @@ import { createApp } from "./app";
 import type { Env } from "./env";
 import type { AppleIdentityVerifier } from "./modules/auth/apple/identity-verifier";
 import type { AppleTokenClient } from "./modules/auth/apple/token-client";
+import { ConsoleTransport } from "./modules/notifications/console-transport";
+import type { PushTransport } from "./modules/notifications/transport";
 
 export function testEnv(overrides: Partial<Env> = {}): Env {
   return {
@@ -26,6 +28,8 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
 
 export interface TestApp extends DbHandle {
   app: ReturnType<typeof createApp>;
+  /** `ConsoleTransport` par défaut (boîte d'envoi inspectable), sauf transport fourni en option. */
+  pushTransport: PushTransport;
 }
 
 export interface CreateTestAppOptions {
@@ -33,17 +37,22 @@ export interface CreateTestAppOptions {
   now?: () => Date;
   appleIdentityVerifier?: AppleIdentityVerifier;
   appleTokenClient?: AppleTokenClient;
+  pushTransport?: PushTransport;
+  maxFriends?: number;
 }
 
 export async function createTestApp(options: CreateTestAppOptions = {}): Promise<TestApp> {
   const handle = await createDb("");
   await handle.migrate();
+  const pushTransport = options.pushTransport ?? new ConsoleTransport();
   const app = createApp({
     db: handle.db,
     env: testEnv(options.env),
     now: options.now,
     appleIdentityVerifier: options.appleIdentityVerifier,
     appleTokenClient: options.appleTokenClient,
+    pushTransport,
+    maxFriends: options.maxFriends,
   });
-  return { ...handle, app };
+  return { ...handle, app, pushTransport };
 }

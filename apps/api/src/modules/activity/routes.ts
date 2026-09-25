@@ -15,7 +15,7 @@ export function registerActivityRoutes(app: AppHono, deps: AppDeps): void {
     const auth = c.get("auth");
     if (!auth) throw new AppError("UNAUTHENTICATED", "Authentification requise");
     const body = await parseJsonBody(c, SyncActivityRequestSchema);
-    const result = await syncActivity(deps.db, auth.userId, body, deps.now());
+    const result = await syncActivity(deps.db, auth.userId, body, deps.now(), deps.pushTransport);
     return c.json(SyncActivityResponseSchema.parse(result), 200);
   });
 

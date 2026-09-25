@@ -12,6 +12,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resetRateLimits } from "../../middleware/rate-limit";
 import { createTestApp, type TestApp } from "../../test-support";
+import { ConsoleTransport } from "../notifications/console-transport";
 
 async function signInDev(testApp: TestApp, devUserKey: string) {
   const res = await testApp.app.request("/auth/dev", {
@@ -51,6 +52,13 @@ function requestFriend(testApp: TestApp, token: string, username: string) {
 
 async function seedActivity(testApp: TestApp, userId: string, date: string, steps: number) {
   await testApp.db.insert(schema.dailyActivity).values({ userId, date, steps, activeCalories: 0, timeZone: "Europe/Paris" });
+}
+
+async function seedFriendship(testApp: TestApp, a: string, b: string) {
+  await testApp.db.insert(schema.friendships).values([
+    { userId: a, friendId: b },
+    { userId: b, friendId: a },
+  ]);
 }
 
 describe("POST /friend-requests (CA7, ADR 005)", () => {
@@ -159,15 +167,32 @@ describe("POST /friend-requests (CA7, ADR 005)", () => {
     expect(bobRequests.outgoing).toEqual([]);
   });
 
-  it("débit : au-delà de FRIEND_REQUESTS_PER_DAY ⇒ 429 RATE_LIMITED", async () => {
+  it("quota journalier (ADR 007, en base) : au-delà de FRIEND_REQUESTS_PER_DAY ⇒ 429 RATE_LIMITED", async () => {
     testApp = await createTestApp();
     const alice = await seedUser(testApp, "alice", "alice");
+    // Seules les demandes réellement créées comptent (pas les pseudos inconnus, ADR 007) : 21 cibles réelles.
+    // `resetRateLimits` évite de heurter le débit générique de `/auth/dev` (non testé ici).
+    for (let i = 0; i < 21; i++) {
+      resetRateLimits();
+      await seedUser(testApp, `target${i}`, `target${i}`);
+    }
     for (let i = 0; i < 20; i++) {
+      const res = await requestFriend(testApp, alice.session.token, `target${i}`);
+      expect(res.status).toBe(202);
+    }
+    const limited = await requestFriend(testApp, alice.session.token, "target20");
+    expect(limited.status).toBe(429);
+    const body = await limited.json();
+    expect(body.error.code).toBe("RATE_LIMITED");
+  });
+
+  it("les pseudos inconnus ne consomment pas le quota journalier", async () => {
+    testApp = await createTestApp();
+    const alice = await seedUser(testApp, "alice", "alice");
+    for (let i = 0; i < 25; i++) {
       const res = await requestFriend(testApp, alice.session.token, `inconnu${i}`);
       expect(res.status).toBe(202);
     }
-    const limited = await requestFriend(testApp, alice.session.token, "inconnu21");
-    expect(limited.status).toBe(429);
   });
 });
 
@@ -395,5 +420,203 @@ describe("GET /friends/:userId/activity (CA8)", () => {
     const body = FriendActivityResponseSchema.parse(await res.json());
     expect(body.user.username).toBe("bob");
     expect(body.today).toEqual({ date: "2026-09-20", steps: 6000, activeCalories: null });
+  });
+});
+
+describe("Notifications de demande d'amitié (ADR 004)", () => {
+  let testApp: TestApp;
+  let transport: ConsoleTransport;
+  let deviceSeed = 0;
+
+  beforeEach(() => {
+    resetRateLimits();
+    transport = new ConsoleTransport();
+    deviceSeed = 0;
+  });
+  afterEach(async () => {
+    await testApp?.close();
+  });
+
+  async function registerDevice(token: string) {
+    deviceSeed += 1;
+    const res = await testApp.app.request("/me/devices", {
+      method: "PUT",
+      headers: authHeader(token),
+      body: JSON.stringify({ apnsToken: deviceSeed.toString(16).padStart(64, "0"), environment: "sandbox" }),
+    });
+    expect(res.status).toBe(204);
+  }
+
+  it("demande réelle : notifie le destinataire (friend_request_received)", async () => {
+    const NOW = new Date("2026-09-20T10:00:00Z"); // midi à Paris, hors heures silencieuses
+    testApp = await createTestApp({ now: () => NOW, pushTransport: transport });
+    const alice = await seedUser(testApp, "alice", "alice");
+    const bob = await seedUser(testApp, "bob", "bob");
+    await registerDevice(bob.session.token);
+
+    await requestFriend(testApp, alice.session.token, "bob");
+
+    expect(transport.outbox).toHaveLength(1);
+    expect(transport.outbox[0]!.notification).toMatchObject({
+      recipientId: bob.userId,
+      type: "friend_request_received",
+      payload: { fromUserId: alice.userId, fromUsername: "alice" },
+    });
+  });
+
+  it("demande cachée (cible bloquante) : jamais notifiée", async () => {
+    const NOW = new Date("2026-09-20T10:00:00Z");
+    testApp = await createTestApp({ now: () => NOW, pushTransport: transport });
+    const alice = await seedUser(testApp, "alice", "alice");
+    const bob = await seedUser(testApp, "bob", "bob");
+    await registerDevice(bob.session.token);
+    await testApp.db.insert(schema.blocks).values({ blockerId: bob.userId, blockedId: alice.userId });
+
+    await requestFriend(testApp, alice.session.token, "bob");
+
+    expect(transport.outbox).toHaveLength(0);
+  });
+
+  it("accepter notifie l'expéditeur (friend_request_accepted)", async () => {
+    const NOW = new Date("2026-09-20T10:00:00Z");
+    testApp = await createTestApp({ now: () => NOW, pushTransport: transport });
+    const alice = await seedUser(testApp, "alice", "alice");
+    const bob = await seedUser(testApp, "bob", "bob");
+    await registerDevice(alice.session.token);
+    await requestFriend(testApp, alice.session.token, "bob");
+    transport.outbox.length = 0; // ignore la notification de demande reçue
+
+    const bobRequests = FriendRequestsResponseSchema.parse(
+      await (await testApp.app.request("/friend-requests", { headers: authHeader(bob.session.token) })).json(),
+    );
+    await testApp.app.request(`/friend-requests/${bobRequests.incoming[0]!.id}/accept`, {
+      method: "POST",
+      headers: authHeader(bob.session.token),
+    });
+
+    expect(transport.outbox).toHaveLength(1);
+    expect(transport.outbox[0]!.notification).toMatchObject({
+      recipientId: alice.userId,
+      type: "friend_request_accepted",
+      payload: { fromUserId: bob.userId, fromUsername: "bob" },
+    });
+  });
+
+  it("acceptation automatique (demande inverse) : notifie l'expéditeur d'origine", async () => {
+    const NOW = new Date("2026-09-20T10:00:00Z");
+    testApp = await createTestApp({ now: () => NOW, pushTransport: transport });
+    const alice = await seedUser(testApp, "alice", "alice");
+    const bob = await seedUser(testApp, "bob", "bob");
+    await registerDevice(bob.session.token);
+    await requestFriend(testApp, bob.session.token, "alice"); // bob -> alice, en attente
+    transport.outbox.length = 0;
+
+    await requestFriend(testApp, alice.session.token, "bob"); // alice -> bob : acceptation auto
+
+    expect(transport.outbox).toHaveLength(1);
+    expect(transport.outbox[0]!.notification).toMatchObject({
+      recipientId: bob.userId,
+      type: "friend_request_accepted",
+      payload: { fromUserId: alice.userId, fromUsername: "alice" },
+    });
+  });
+});
+
+describe("MAX_FRIENDS (limite injectable, demandée par le lead)", () => {
+  let testApp: TestApp;
+
+  beforeEach(() => resetRateLimits());
+  afterEach(async () => {
+    await testApp?.close();
+  });
+
+  it("accepter manuellement refusé (409 FRIEND_LIMIT_REACHED) si le destinataire est déjà à la limite", async () => {
+    testApp = await createTestApp({ maxFriends: 2 });
+    const alice = await seedUser(testApp, "alice", "alice");
+    const bob = await seedUser(testApp, "bob", "bob");
+    const charlie = await seedUser(testApp, "charlie", "charlie");
+    const dave = await seedUser(testApp, "dave", "dave");
+    await seedFriendship(testApp, alice.userId, bob.userId);
+    await seedFriendship(testApp, alice.userId, charlie.userId); // alice déjà à la limite (2)
+
+    await requestFriend(testApp, dave.session.token, "alice");
+    const aliceRequests = FriendRequestsResponseSchema.parse(
+      await (await testApp.app.request("/friend-requests", { headers: authHeader(alice.session.token) })).json(),
+    );
+    const res = await testApp.app.request(`/friend-requests/${aliceRequests.incoming[0]!.id}/accept`, {
+      method: "POST",
+      headers: authHeader(alice.session.token),
+    });
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.error.code).toBe("FRIEND_LIMIT_REACHED");
+
+    // Ni amitié créée, ni demande consommée.
+    const aliceFriends = FriendsResponseSchema.parse(
+      await (await testApp.app.request("/friends", { headers: authHeader(alice.session.token) })).json(),
+    );
+    expect(aliceFriends.friends.map((f) => f.username).sort()).toEqual(["bob", "charlie"]);
+  });
+
+  it("accepter manuellement refusé si l'expéditeur (pas le destinataire) est à la limite", async () => {
+    testApp = await createTestApp({ maxFriends: 2 });
+    const alice = await seedUser(testApp, "alice", "alice");
+    const bob = await seedUser(testApp, "bob", "bob");
+    const charlie = await seedUser(testApp, "charlie", "charlie");
+    const dave = await seedUser(testApp, "dave", "dave");
+    await seedFriendship(testApp, dave.userId, bob.userId);
+    await seedFriendship(testApp, dave.userId, charlie.userId); // dave (expéditeur) déjà à la limite
+
+    await requestFriend(testApp, dave.session.token, "alice");
+    const aliceRequests = FriendRequestsResponseSchema.parse(
+      await (await testApp.app.request("/friend-requests", { headers: authHeader(alice.session.token) })).json(),
+    );
+    const res = await testApp.app.request(`/friend-requests/${aliceRequests.incoming[0]!.id}/accept`, {
+      method: "POST",
+      headers: authHeader(alice.session.token),
+    });
+    expect(res.status).toBe(409);
+    expect((await res.json()).error.code).toBe("FRIEND_LIMIT_REACHED");
+  });
+
+  it("acceptation croisée (demande inverse) refusée en silence à la limite : reste en attente, pas d'amitié créée", async () => {
+    testApp = await createTestApp({ maxFriends: 2 });
+    const alice = await seedUser(testApp, "alice", "alice");
+    const bob = await seedUser(testApp, "bob", "bob");
+    const charlie = await seedUser(testApp, "charlie", "charlie");
+    const dave = await seedUser(testApp, "dave", "dave");
+    await seedFriendship(testApp, alice.userId, bob.userId);
+    await seedFriendship(testApp, alice.userId, charlie.userId); // alice déjà à la limite (2)
+
+    await requestFriend(testApp, dave.session.token, "alice"); // dave -> alice, en attente
+    const res = await requestFriend(testApp, alice.session.token, "dave"); // alice -> dave : tenterait l'acceptation auto
+    expect(res.status).toBe(202); // réponse neutre inchangée (ADR 005), même refusée en interne
+    expect(await res.json()).toEqual({ status: "requested" });
+
+    const aliceFriends = FriendsResponseSchema.parse(
+      await (await testApp.app.request("/friends", { headers: authHeader(alice.session.token) })).json(),
+    );
+    expect(aliceFriends.friends.map((f) => f.username).sort()).toEqual(["bob", "charlie"]); // dave absent
+
+    // La demande de dave reste en attente (ni acceptée, ni supprimée).
+    const daveRequests = FriendRequestsResponseSchema.parse(
+      await (await testApp.app.request("/friend-requests", { headers: authHeader(dave.session.token) })).json(),
+    );
+    expect(daveRequests.outgoing.map((r) => r.to.username)).toEqual(["alice"]);
+  });
+
+  it("avec la limite par défaut (200), l'acceptation fonctionne normalement", async () => {
+    testApp = await createTestApp();
+    const alice = await seedUser(testApp, "alice", "alice");
+    const bob = await seedUser(testApp, "bob", "bob");
+    await requestFriend(testApp, alice.session.token, "bob");
+    const bobRequests = FriendRequestsResponseSchema.parse(
+      await (await testApp.app.request("/friend-requests", { headers: authHeader(bob.session.token) })).json(),
+    );
+    const res = await testApp.app.request(`/friend-requests/${bobRequests.incoming[0]!.id}/accept`, {
+      method: "POST",
+      headers: authHeader(bob.session.token),
+    });
+    expect(res.status).toBe(200);
   });
 });

@@ -4,6 +4,7 @@ import type { Hono } from "hono";
 import type { Env } from "./env";
 import type { AppleIdentityVerifier } from "./modules/auth/apple/identity-verifier";
 import type { AppleTokenClient } from "./modules/auth/apple/token-client";
+import type { PushTransport } from "./modules/notifications/transport";
 
 export interface AppDeps {
   db: Db;
@@ -12,6 +13,9 @@ export interface AppDeps {
   now: () => Date;
   appleIdentityVerifier: AppleIdentityVerifier;
   appleTokenClient: AppleTokenClient;
+  pushTransport: PushTransport;
+  /** Injectable (tests) ; `MAX_FRIENDS` (`@app/contracts`) par défaut. */
+  maxFriends: number;
 }
 
 /** Posé par le middleware d'authentification (`middleware/auth.ts`) sur les routes non publiques. */

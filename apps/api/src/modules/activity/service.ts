@@ -6,6 +6,8 @@ import { schema } from "@app/db";
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { addDaysToLocalDate, compareLocalDates, localDate } from "../../domain/local-date";
 import { AppError } from "../../errors";
+import { detectAndNotifyMilestone } from "../notifications/milestones";
+import type { PushTransport } from "../notifications/transport";
 
 async function requireHealthConsent(db: Db, userId: string): Promise<void> {
   const [user] = await db
@@ -23,7 +25,13 @@ async function requireHealthConsent(db: Db, userId: string): Promise<void> {
  * (NFR §4 : lot de 31 jours < 300 ms). Rejette les dates hors [aujourd'hui local − 31 j,
  * aujourd'hui local + 1 j] (ADR 002).
  */
-export async function syncActivity(db: Db, userId: string, req: SyncActivityRequest, now: Date): Promise<SyncActivityResponse> {
+export async function syncActivity(
+  db: Db,
+  userId: string,
+  req: SyncActivityRequest,
+  now: Date,
+  transport: PushTransport,
+): Promise<SyncActivityResponse> {
   await requireHealthConsent(db, userId);
 
   const today = localDate(now, req.timeZone);
@@ -33,6 +41,18 @@ export async function syncActivity(db: Db, userId: string, req: SyncActivityRequ
     if (compareLocalDates(day.date, minDate) < 0 || compareLocalDates(day.date, maxDate) > 0) {
       throw new AppError("DATE_OUT_OF_RANGE", `Date hors de la fenêtre autorisée : ${day.date}`);
     }
+  }
+
+  // Capturé avant l'upsert : seuils franchis = prev < s ≤ new (ADR 004), jour courant local
+  // seulement — jamais en rattrapage historique.
+  const todayInRequest = req.days.find((d) => d.date === today);
+  let prevTodaySteps = 0;
+  if (todayInRequest) {
+    const [existing] = await db
+      .select({ steps: schema.dailyActivity.steps })
+      .from(schema.dailyActivity)
+      .where(and(eq(schema.dailyActivity.userId, userId), eq(schema.dailyActivity.date, today)));
+    prevTodaySteps = existing?.steps ?? 0;
   }
 
   await db.transaction(async (tx) => {
@@ -59,6 +79,10 @@ export async function syncActivity(db: Db, userId: string, req: SyncActivityRequ
       });
     await tx.update(schema.users).set({ timeZone: req.timeZone, lastSyncAt: now }).where(eq(schema.users.id, userId));
   });
+
+  if (todayInRequest) {
+    await detectAndNotifyMilestone(db, transport, userId, today, prevTodaySteps, todayInRequest.steps, now);
+  }
 
   return { upserted: req.days.length, syncedAt: now.toISOString() };
 }

@@ -2,7 +2,7 @@
 // enveloppe d'erreur unique du contrat (400 validation, 404 JSON, 500 sans détail interne).
 // Les routes métier sont ajoutées tâche par tâche (B3 et suivantes).
 import type { ApiError } from "@app/contracts";
-import { RATE_LIMIT_PER_MINUTE_PER_USER } from "@app/contracts";
+import { MAX_FRIENDS, RATE_LIMIT_PER_MINUTE_PER_USER } from "@app/contracts";
 import type { Db } from "@app/db";
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
@@ -18,9 +18,13 @@ import type { AppleIdentityVerifier } from "./modules/auth/apple/identity-verifi
 import type { AppleTokenClient } from "./modules/auth/apple/token-client";
 import { registerAuthRoutes } from "./modules/auth/routes";
 import { registerBlockRoutes } from "./modules/blocks/routes";
+import { registerEncouragementRoutes } from "./modules/encouragements/routes";
 import { registerFriendRoutes } from "./modules/friends/routes";
 import { registerLeaderboardRoutes } from "./modules/leaderboards/routes";
 import { registerMeRoutes } from "./modules/me/routes";
+import { createPushTransport } from "./modules/notifications/factory";
+import { registerNotificationRoutes } from "./modules/notifications/routes";
+import type { PushTransport } from "./modules/notifications/transport";
 
 const ONE_MINUTE_MS = 60_000;
 
@@ -40,6 +44,10 @@ export interface CreateAppOptions {
   /** Remplacés dans les tests (JWKS/clé Apple locaux). Par défaut construits depuis `env`. */
   appleIdentityVerifier?: AppleIdentityVerifier;
   appleTokenClient?: AppleTokenClient;
+  /** Remplacé dans les tests par un `ConsoleTransport` dédié (inspection de la boîte d'envoi). */
+  pushTransport?: PushTransport;
+  /** Injectable pour les tests (limite basse) ; `MAX_FRIENDS` (200, `@app/contracts`) par défaut. */
+  maxFriends?: number;
 }
 
 export function createApp(options: CreateAppOptions): AppHono {
@@ -50,6 +58,8 @@ export function createApp(options: CreateAppOptions): AppHono {
     now: options.now ?? (() => new Date()),
     appleIdentityVerifier: options.appleIdentityVerifier ?? appleDefaults.appleIdentityVerifier,
     appleTokenClient: options.appleTokenClient ?? appleDefaults.appleTokenClient,
+    pushTransport: options.pushTransport ?? createPushTransport(options.env),
+    maxFriends: options.maxFriends ?? MAX_FRIENDS,
   };
   const app: AppHono = new Hono();
 
@@ -93,6 +103,8 @@ export function createApp(options: CreateAppOptions): AppHono {
   registerLeaderboardRoutes(app, deps);
   registerFriendRoutes(app, deps);
   registerBlockRoutes(app, deps);
+  registerNotificationRoutes(app, deps);
+  registerEncouragementRoutes(app, deps);
 
   app.notFound((c) => {
     const body: ApiError = { error: { code: "NOT_FOUND", message: "Route inconnue" } };

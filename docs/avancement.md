@@ -16,9 +16,10 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | B6 classements et accueil | terminé | 8fb10a6 |
 | B7 demandes d'amitié et amis | terminé (test MAX_FRIENDS à livrer avec B8) | 8ce34d8 |
 | B8 blocages (test encouragement 404 en B10) | terminé | b7c174c |
-| B9 pipeline de notifications (+ MAX_FRIENDS injectable, quota demandes en base) | validé, commit groupé avec B10 (app.ts importe B10) | — |
-| B10 encouragements | en cours | — |
-| B11 → B12 | à faire | — |
+| B9 pipeline de notifications (+ MAX_FRIENDS injectable, quota demandes en base) | terminé | voir B10 |
+| B10 encouragements (+ test encouragement 404 après blocage) | terminé | voir git log |
+| B11 suppression de compte, confidentialité | en cours | — |
+| B12 transport APNs | à faire | — |
 | M1 scaffolding mobile + aperçu web | terminé | fb60949 |
 | M2 client API et session | terminé | 7aa4b20 |
 | M3 HealthSource | terminé | e7255e6 |
