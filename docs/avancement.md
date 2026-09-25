@@ -3,7 +3,8 @@
 > Pas d'outil de liste de tâches partagé dans cette équipe : ce fichier fait foi pour reprendre (`/equipe reprendre`).
 > Définition des tâches : `docs/architecture.md` §9. Mis à jour : 2026-09-25, reprise : backend et mobile relancés.
 
-## Phase en cours : 3 (contrôle)
+## Phase en cours : 4 (livraison), validation humaine n°2 attendue
+Phase 3 terminée le 2026-09-25 : pnpm check (10/10 ; 226 api, 124 mobile, 132 ui, 15 contracts, 4 db), pnpm build et pnpm test:e2e (33/33) verts. Tous les coéquipiers sont arrêtés.
 Phase 2 terminée le 2026-09-25 (B1–B12, M1–M11).
 Validation humaine n°1 obtenue le 2026-09-24.
 
@@ -38,7 +39,7 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | Compléments UI (StatTile.onPress, SunBadge, screens.md consentement) | terminé | 96a1e40 |
 | Revue visuelle par captures (docs/design/review/revue-visuelle.md) | terminé : 54 captures, 22 écarts (1 bloquant, 12 majeurs, 9 mineurs) | 83314f0 |
 | Boucle 1 [mobile] B1 consentement, M1–M10, m1–m7 | terminé (2e passe : 20/22) | 527cd27 |
-| Boucle 2 [mobile] M3 toast, n1 squelette, m7 seuil simulé | terminé, vérification captures en cours (designer-2) | 36bc220, 6893272 |
+| Boucle 2 [mobile] M3 toast, n1 squelette, m7 seuil simulé | terminé, vérifié par captures (22/22 + n1) | 36bc220, 6893272 |
 | R1 config Playwright + E2E CA1–CA3 | terminé (12/12) | 1037f3e |
 | R2 E2E social CA5–CA9, CA11 | terminé (32/32, aucune anomalie) | voir git log |
 | R3 E2E CA12 + revue sécurité | terminé (33/33 E2E, verdict livrable, 0 bloquant/majeur) | ba8e195 |
