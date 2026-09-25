@@ -11,6 +11,7 @@ import {
   ProgressBar,
   Skeleton,
   SkyBackground,
+  SunBadge,
   formatKcal,
   formatSteps,
 } from "@app/ui";
@@ -108,16 +109,21 @@ function HistoryRowItem({ row, bestSteps }: { row: HistoryRow; bestSteps: number
   }
 
   const { steps, activeCalories } = row.entry;
-  // Pastille soleil décorative sur le seuil de 10 000 (screens.md §8) : rendue en texte plutôt
-  // qu'en icône graphique, ListRow n'exposant pas d'emplacement pour une puce à côté de la valeur
-  // sans perdre l'affichage de celle-ci (voir ListRow.tsx, branche `trailing`).
+  // Seuil de 10 000 franchi (screens.md §8) : `SunBadge` en `leading`, masqué à VoiceOver ; le sens
+  // passe par `leadingLabel`, ajouté au libellé de la ligne (voir ListRow.tsx). Jours sans palier :
+  // pas de `leading`, le texte reste aligné (aucun emplacement vide).
   const milestoneReached = steps >= 10_000;
   const kcal = formatKcal(activeCalories ?? 0);
-  const subtitle = milestoneReached ? `${kcal} · Palier de 10 000 franchi` : kcal;
 
   return (
     <View className="gap-1">
-      <ListRow title={dateLabel} subtitle={subtitle} value={formatSteps(steps)} />
+      <ListRow
+        title={dateLabel}
+        subtitle={kcal}
+        value={formatSteps(steps)}
+        leading={milestoneReached ? <SunBadge /> : undefined}
+        leadingLabel={milestoneReached ? "palier de 10 000 franchi" : undefined}
+      />
       <ProgressBar
         progress={bestSteps > 0 ? steps / bestSteps : 0}
         accessibilityLabel={`Pas du ${dateLabel}`}

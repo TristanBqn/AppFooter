@@ -21,6 +21,7 @@ import { impactLight } from "../../../src/haptics";
 import { formatHeaderDate, formatWeekRange } from "../../../src/home/formatDate";
 import { useToast } from "../../../src/hooks/useToast";
 import { buildLeaderboardBanner, leaderboardBannerText } from "../../../src/leaderboard/banner";
+import { LEADERBOARD_DAILY_QUERY_KEY, LEADERBOARD_WEEKLY_QUERY_KEY } from "../../../src/leaderboard/queryKeys";
 import { onGlobalToast } from "../../../src/toastEvents";
 
 // Classement quotidien / hebdomadaire (M6, CA5, CA6, screens.md §5). Toucher une ligne (hors la
@@ -43,8 +44,8 @@ export default function ClassementScreen() {
   useEffect(() => onGlobalToast(showToast), [showToast]);
 
   // Les deux périodes sont préchargées (screens.md §5) : la bascule est instantanée.
-  const dailyQuery = useQuery({ queryKey: ["leaderboard", "daily"] as const, queryFn: api.leaderboards.daily });
-  const weeklyQuery = useQuery({ queryKey: ["leaderboard", "weekly"] as const, queryFn: api.leaderboards.weekly });
+  const dailyQuery = useQuery({ queryKey: LEADERBOARD_DAILY_QUERY_KEY, queryFn: api.leaderboards.daily });
+  const weeklyQuery = useQuery({ queryKey: LEADERBOARD_WEEKLY_QUERY_KEY, queryFn: api.leaderboards.weekly });
   const query = period === "daily" ? dailyQuery : weeklyQuery;
 
   async function onRefresh() {

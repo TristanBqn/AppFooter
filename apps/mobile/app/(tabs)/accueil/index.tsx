@@ -33,14 +33,14 @@ import { RECEIVED_ENCOURAGEMENTS_QUERY_KEY } from "../../../src/encouragements/q
 import { hasEncouragementOn, sortByMostRecent, type ReceivedEncouragement } from "../../../src/encouragements/receivedView";
 import { getHealthSource } from "../../../src/health";
 import { formatHeaderDate } from "../../../src/home/formatDate";
+import { buildNextFriendCard, type NextFriendCard } from "../../../src/home/nextFriendCard";
 import { TODAY_QUERY_KEY } from "../../../src/home/todayQuery";
 import { buildTodayViewModel } from "../../../src/home/todayViewModel";
+import { LEADERBOARD_DAILY_QUERY_KEY } from "../../../src/leaderboard/queryKeys";
 import { useActivitySync } from "../../../src/sync/useActivitySync";
 import { useToast } from "../../../src/hooks/useToast";
 
-// Accueil (M5/M8/M9, CA3/CA9, screens.md §4). La carte « prochain ami » dépend des amis, hors
-// périmètre (cf. rapport M5) : elle nécessiterait une donnée de classement non fournie par
-// `/me/today`.
+// Accueil (M5/M8/M9, CA3/CA9, screens.md §4).
 const AUTHORIZE_ERROR = "Impossible d'activer Apple Santé pour l'instant. Vérifie ta connexion puis réessaie.";
 
 function currentLocalDate(timeZone: string): LocalDate {
@@ -74,6 +74,14 @@ export default function AccueilScreen() {
     queryFn: api.encouragements.received,
   });
 
+  // Même clé que le Classement (src/leaderboard/queryKeys.ts) : partage le cache TanStack Query
+  // au lieu de dupliquer l'appel réseau.
+  const leaderboardQuery = useQuery({
+    queryKey: LEADERBOARD_DAILY_QUERY_KEY,
+    queryFn: api.leaderboards.daily,
+    enabled: hasConsent,
+  });
+
   const view = buildTodayViewModel({
     hasHealthConsent: hasConsent,
     isPending: todayQuery.isPending,
@@ -101,7 +109,7 @@ export default function AccueilScreen() {
 
   async function onRefresh() {
     await sync();
-    await todayQuery.refetch();
+    await Promise.all([todayQuery.refetch(), leaderboardQuery.refetch()]);
   }
 
   const refreshing = syncing || todayQuery.isFetching;
@@ -109,6 +117,9 @@ export default function AccueilScreen() {
   const todayLocalDate = todayQuery.data?.date ?? localToday?.date ?? currentLocalDate(timeZone);
   const receivedItems = receivedQuery.data ? sortByMostRecent(receivedQuery.data.encouragements) : [];
   const showEncouragementsCard = hasEncouragementOn(receivedItems, todayLocalDate, timeZone);
+  const nextFriendCard: NextFriendCard = leaderboardQuery.data
+    ? buildNextFriendCard(leaderboardQuery.data.entries)
+    : { kind: "hidden" };
 
   return (
     <SkyBackground variant="sky">
@@ -168,6 +179,8 @@ export default function AccueilScreen() {
           {view.kind === "data" ? (
             <TodayCard steps={view.steps} activeCalories={view.activeCalories} rank={view.rank} participants={view.participants} degraded={view.degraded} />
           ) : null}
+
+          {view.kind === "data" ? <NextFriendCardView card={nextFriendCard} myUsername={me?.username ?? ""} /> : null}
 
           {showEncouragementsCard ? <EncouragementsReceivedCard items={receivedItems.slice(0, 3)} /> : null}
 
@@ -246,13 +259,39 @@ function TodayCard({ steps, activeCalories, rank, participants, degraded }: Toda
               label="Rang du jour"
               value={`${formatRank(rank)} sur ${participants}`}
               accessibilityLabel={`Rang du jour, ${formatRank(rank)} sur ${participants} participants`}
+              onPress={() => router.push("/(tabs)/classement")}
+              accessibilityHint="Ouvre le classement"
             />
           ) : (
-            <StatTile label="Amis" value="Ajoute un ami" />
+            <StatTile
+              label="Amis"
+              value="Ajoute un ami"
+              onPress={() => router.push("/(tabs)/amis")}
+              accessibilityHint="Ouvre tes amis"
+            />
           )}
         </View>
       </GlassCard>
     </View>
+  );
+}
+
+type NextFriendCardViewProps = { card: NextFriendCard; myUsername: string };
+
+/** Carte « prochain ami » de l'Accueil (screens.md §4) : masquée sans ami (`card.kind === "hidden"`). */
+function NextFriendCardView({ card, myUsername }: NextFriendCardViewProps) {
+  if (card.kind === "hidden") return null;
+  const monogramName = card.kind === "leading" ? myUsername : card.username;
+  return (
+    <GlassCard>
+      <ListRow
+        title={card.title}
+        subtitle={"subtitle" in card ? card.subtitle : undefined}
+        leading={<Monogram name={monogramName} />}
+        onPress={() => router.push("/(tabs)/classement")}
+        accessibilityHint="Ouvre le classement"
+      />
+    </GlassCard>
   );
 }
 

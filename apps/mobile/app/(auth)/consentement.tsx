@@ -22,7 +22,8 @@ const CONSENT_BULLETS = [
 ] as const;
 
 const CONSENT_SAVE_ERROR = "Impossible d'enregistrer ton accord pour l'instant. Vérifie ta connexion puis réessaie.";
-const DECLINE_MESSAGE = "Sans cet accord, Footer ne peut pas compter tes pas. Tu pourras changer d'avis plus tard.";
+const DECLINE_MESSAGE =
+  "Pas de souci. Footer ne lira pas tes pas sans ton accord. Tu peux l'activer quand tu veux.";
 
 type Step = "form" | "refused";
 
@@ -41,12 +42,9 @@ export default function ConsentementScreen() {
     await WebBrowser.openBrowserAsync(PRIVACY_URL);
   }
 
-  // screens.md décrit « Pas maintenant » comme un retour à la page 2 de l'onboarding. Le
-  // consentement est en réalité affiché après la connexion Apple et le pseudo (décision du lead,
-  // docs/avancement.md) : à ce stade l'utilisateur est déjà identifié, un retour à l'onboarding
-  // pré-connexion n'a plus de sens produit. On applique donc la même destination que « Plus tard »
-  // après un refus HealthKit (Accueil, état « Santé non connectée »), avec le même message
-  // rassurant. Écart signalé au lead (voir compte rendu de tâche) plutôt qu'appliqué en silence.
+  // « Pas maintenant » (screens.md §1) : aucune synchro, aucun appel HealthKit, retour à l'Accueil
+  // (pas à l'onboarding, le consentement est affiché après la connexion et le pseudo) avec le
+  // toast rassurant exact du document ; l'Accueil s'affiche en état vide « consentement absent ».
   function onDecline() {
     showToast(DECLINE_MESSAGE, "info");
     goToAccueil();
