@@ -16,8 +16,9 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | B6 classements et accueil | terminé | 8fb10a6 |
 | B7 demandes d'amitié et amis | terminé (test MAX_FRIENDS à livrer avec B8) | 8ce34d8 |
 | B8 blocages (test encouragement 404 en B10) | terminé | b7c174c |
-| B9 pipeline de notifications | en cours | — |
-| B10 → B12 | à faire | — |
+| B9 pipeline de notifications (+ MAX_FRIENDS injectable, quota demandes en base) | validé, commit groupé avec B10 (app.ts importe B10) | — |
+| B10 encouragements | en cours | — |
+| B11 → B12 | à faire | — |
 | M1 scaffolding mobile + aperçu web | terminé | fb60949 |
 | M2 client API et session | terminé | 7aa4b20 |
 | M3 HealthSource | terminé | e7255e6 |
@@ -27,7 +28,7 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | M7 amis, demandes, fiche ami | terminé (reliquats M5 demandés : carte prochain ami, tuile Rang, SunBadge, toast) | 0b94662 |
 | M8 encouragements | terminé (reliquats M5/M7 toujours ouverts, exigés avant M9) | 45f05e4 |
 | M9 paramètres, retrait, blocage, suppression | terminé (bandeau notifications désactivées reporté en M10) | 1c29aad |
-| Reliquats accueil (tuiles Rang/Amis pressables, prochain ami, SunBadge, toast refus) | en cours (mobile relancé à neuf : l'ancien ne lisait pas les messages du lead) | — |
+| Reliquats accueil (tuiles Rang/Amis pressables, prochain ami, SunBadge, toast refus) | terminé, mobile arrêté (plus de tâche en phase 2) | 2f66a64 |
 | M10 notifications push | terminé (routage par type de push : choix documenté dans src/notifications/route.ts) | 87b4220 |
 | M11 passe accessibilité | terminé (revue de code ; checklist à dérouler sur appareil : apps/mobile/docs/checklist-m11.md) | a6f89cd |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
@@ -36,8 +37,6 @@ Validation humaine n°1 obtenue le 2026-09-24.
 
 ## Demandes du lead encore ouvertes
 - **Sécurité dépendances** : exclusion `minimumReleaseAgeExclude` retirée ; expo-notifications épinglé en 57.0.20, conforme à la politique (fbf3c18). `pnpm install` repasse.
-- **backend** : test MAX_FRIENDS (limite injectable) : rappelé après B8, à livrer avant B9.
-- **mobile**, reports de M5 : carte « prochain ami » (M7), encouragements reçus (M8), engrenage Paramètres (M9), animation de seuil (M11).
 
 ## Décisions utilisateur et arbitrages (en plus de brief.md et des ADR)
 - Pas d'app web ; aperçu web Expo réservé au rendu visuel et aux captures (pas de simulateur iOS sous Windows).
