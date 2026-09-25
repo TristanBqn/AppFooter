@@ -26,7 +26,9 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | M6 classement | terminé | 7f5666f |
 | M7 amis, demandes, fiche ami | terminé (reliquats M5 demandés : carte prochain ami, tuile Rang, SunBadge, toast) | 0b94662 |
 | M8 encouragements | terminé (reliquats M5/M7 toujours ouverts, exigés avant M9) | 45f05e4 |
-| M9 → M11 | à faire | — |
+| M9 paramètres, retrait, blocage, suppression | terminé (bandeau notifications désactivées reporté en M10) | 1c29aad |
+| Reliquats accueil (tuiles Rang/Amis pressables, prochain ami, SunBadge, toast refus) | exigés avant M10 (3e relance) | — |
+| M10 → M11 | à faire | — |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
 | Compléments UI (StatTile.onPress, SunBadge, screens.md consentement) | terminé, designer arrêté jusqu'en phase 3 | 96a1e40 |
 | R1–R3 | phase 3 | — |
