@@ -19,6 +19,7 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | B9 pipeline de notifications (+ MAX_FRIENDS injectable, quota demandes en base) | terminé | voir B10 |
 | B10 encouragements (+ test encouragement 404 après blocage) | terminé | voir git log |
 | B11 suppression de compte, confidentialité | en cours | — |
+| B-e2e limite auth réglable (E2E_AUTH_RATE_LIMIT, start:e2e seulement) | après B11 | — |
 | B12 transport APNs | à faire | — |
 | M1 scaffolding mobile + aperçu web | terminé | fb60949 |
 | M2 client API et session | terminé | 7aa4b20 |
@@ -34,7 +35,9 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | M11 passe accessibilité | terminé (revue de code ; checklist à dérouler sur appareil : apps/mobile/docs/checklist-m11.md) | a6f89cd |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
 | Compléments UI (StatTile.onPress, SunBadge, screens.md consentement) | terminé, designer arrêté jusqu'en phase 3 | 96a1e40 |
-| R1–R3 | phase 3 | — |
+| R1 config Playwright + E2E CA1–CA3 | terminé (12/12) | 1037f3e |
+| R2 E2E social CA5–CA9, CA11 | en cours | — |
+| R3 E2E CA12 + revue sécurité | après B11 | — |
 
 ## Demandes du lead encore ouvertes
 - **Sécurité dépendances** : exclusion `minimumReleaseAgeExclude` retirée ; expo-notifications épinglé en 57.0.20, conforme à la politique (fbf3c18). `pnpm install` repasse.
