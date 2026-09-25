@@ -1,5 +1,5 @@
 // GET /me, PUT /me/username (CA1, CA2), GET/PATCH /me/settings, PUT /me/consents/health (F15,
-// ADR 006). Suppression du compte : B11.
+// ADR 006), DELETE /me (CA12, ADR 001/006).
 import {
   HealthConsentRequestSchema,
   HealthConsentResponseSchema,
@@ -15,6 +15,7 @@ import { parseJsonBody } from "../../lib/validate";
 import { rateLimit } from "../../middleware/rate-limit";
 import { setUsername } from "../auth/users";
 import { setHealthConsent } from "./consent-service";
+import { deleteAccount } from "./delete-service";
 import { loadMe } from "./service";
 import { getSettings, updateSettings } from "./settings-service";
 
@@ -76,5 +77,12 @@ export function registerMeRoutes(app: AppHono, deps: AppDeps): void {
       HealthConsentResponseSchema.parse({ healthConsentAt: healthConsentAt?.toISOString() ?? null }),
       200,
     );
+  });
+
+  app.delete("/me", async (c) => {
+    const auth = c.get("auth");
+    if (!auth) throw new AppError("UNAUTHENTICATED", "Authentification requise");
+    await deleteAccount(deps.db, deps.appleTokenClient, deps.env.appleTokenEncKey, auth.userId);
+    return c.body(null, 204);
   });
 }

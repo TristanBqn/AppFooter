@@ -12,7 +12,7 @@ const FLUSH_INTERVAL_MS = 60_000;
 const env = loadEnv();
 const { db, migrate, close } = await createDb(env.databaseUrl);
 await migrate();
-const pushTransport = createPushTransport(env);
+const pushTransport = createPushTransport(env, db);
 const app = createApp({ db, env, pushTransport });
 
 const server = serve({ fetch: app.fetch, port: env.apiPort }, (info) => {

@@ -25,6 +25,7 @@ import { registerMeRoutes } from "./modules/me/routes";
 import { createPushTransport } from "./modules/notifications/factory";
 import { registerNotificationRoutes } from "./modules/notifications/routes";
 import type { PushTransport } from "./modules/notifications/transport";
+import { registerPrivacyRoutes } from "./modules/privacy/routes";
 
 const ONE_MINUTE_MS = 60_000;
 
@@ -58,7 +59,7 @@ export function createApp(options: CreateAppOptions): AppHono {
     now: options.now ?? (() => new Date()),
     appleIdentityVerifier: options.appleIdentityVerifier ?? appleDefaults.appleIdentityVerifier,
     appleTokenClient: options.appleTokenClient ?? appleDefaults.appleTokenClient,
-    pushTransport: options.pushTransport ?? createPushTransport(options.env),
+    pushTransport: options.pushTransport ?? createPushTransport(options.env, options.db),
     maxFriends: options.maxFriends ?? MAX_FRIENDS,
   };
   const app: AppHono = new Hono();
@@ -105,6 +106,7 @@ export function createApp(options: CreateAppOptions): AppHono {
   registerBlockRoutes(app, deps);
   registerNotificationRoutes(app, deps);
   registerEncouragementRoutes(app, deps);
+  registerPrivacyRoutes(app, deps);
 
   app.notFound((c) => {
     const body: ApiError = { error: { code: "NOT_FOUND", message: "Route inconnue" } };
