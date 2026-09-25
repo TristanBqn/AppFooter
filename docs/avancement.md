@@ -28,12 +28,14 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | M8 encouragements | terminé (reliquats M5/M7 toujours ouverts, exigés avant M9) | 45f05e4 |
 | M9 paramètres, retrait, blocage, suppression | terminé (bandeau notifications désactivées reporté en M10) | 1c29aad |
 | Reliquats accueil (tuiles Rang/Amis pressables, prochain ami, SunBadge, toast refus) | exigés avant M10 (3e relance) | — |
-| M10 → M11 | à faire | — |
+| M10 notifications push | terminé (routage par type de push : choix documenté dans src/notifications/route.ts) | 87b4220 |
+| M11 passe accessibilité | à faire | — |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
 | Compléments UI (StatTile.onPress, SunBadge, screens.md consentement) | terminé, designer arrêté jusqu'en phase 3 | 96a1e40 |
 | R1–R3 | phase 3 | — |
 
 ## Demandes du lead encore ouvertes
+- **Sécurité dépendances** : exclusion `minimumReleaseAgeExclude` ajoutée par mobile pour expo-notifications 57.0.21, retirée par le lead. `pnpm` refuse le lockfile jusqu'à 2026-09-25 10:17Z ; ensuite, relancer `pnpm install` et `pnpm check`.
 - **backend** : test MAX_FRIENDS (limite injectable) : rappelé après B8, à livrer avant B9.
 - **mobile**, reports de M5 : carte « prochain ami » (M7), encouragements reçus (M8), engrenage Paramètres (M9), animation de seuil (M11).
 
