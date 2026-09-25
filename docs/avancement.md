@@ -15,21 +15,23 @@ Validation humaine n°1 obtenue le 2026-09-24.
 | B5 paramètres, consentement, synchro, historique | terminé (WIP relu, complet, 109 tests verts) | 9b78061 |
 | B6 classements et accueil | terminé | 8fb10a6 |
 | B7 demandes d'amitié et amis | terminé (test MAX_FRIENDS à livrer avec B8) | 8ce34d8 |
-| B8 blocages | en cours | — |
-| B9 → B12 | à faire | — |
+| B8 blocages (test encouragement 404 en B10) | terminé | b7c174c |
+| B9 pipeline de notifications | en cours | — |
+| B10 → B12 | à faire | — |
 | M1 scaffolding mobile + aperçu web | terminé | fb60949 |
 | M2 client API et session | terminé | 7aa4b20 |
 | M3 HealthSource | terminé | e7255e6 |
 | M4 connexion Apple, pseudonyme, consentement | terminé | 6845cb6 |
 | M5 synchro et Accueil | terminé | 49738d1 |
-| M6 classement | en cours | — |
-| M7 → M11 | à faire | — |
+| M6 classement | terminé | 7f5666f |
+| M7 amis, demandes, fiche ami | en cours | — |
+| M8 → M11 | à faire | — |
 | D1–D4 design system, écrans, icône | terminé | 5da5750, f2ce3a1, df0a072 |
 | R1–R3 | phase 3 | — |
 
 ## Demandes du lead encore ouvertes
 - **designer** (relancé) : screens.md « Pas maintenant » ⇒ Accueil ; `StatTile.onPress` ; `ListRow.leading` (pastille soleil).
-- **backend** : test MAX_FRIENDS (limite injectable) avec B8.
+- **backend** : test MAX_FRIENDS (limite injectable) : rappelé après B8, à livrer avant B9.
 - **mobile**, reports de M5 : carte « prochain ami » (M7), encouragements reçus (M8), engrenage Paramètres (M9), animation de seuil (M11).
 
 ## Décisions utilisateur et arbitrages (en plus de brief.md et des ADR)
