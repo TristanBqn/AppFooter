@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SymbolView } from "expo-symbols";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { STEP_MILESTONES, type LocalDate } from "@app/contracts";
@@ -22,6 +23,7 @@ import {
   formatSteps,
   progressToNext,
 } from "@app/ui";
+import { lightColors } from "@app/ui/tokens";
 import { useAuth } from "../../../src/auth/AuthProvider";
 import { api } from "../../../src/api/endpoints";
 import { ApiClientError } from "../../../src/api/errors";
@@ -35,9 +37,9 @@ import { buildTodayViewModel } from "../../../src/home/todayViewModel";
 import { useActivitySync } from "../../../src/sync/useActivitySync";
 import { useToast } from "../../../src/hooks/useToast";
 
-// Accueil (M5/M8, CA3/CA9, screens.md §4). La carte « prochain ami » dépend des amis (hors
-// périmètre, cf. rapport M5). Le bouton engrenage (Paramètres) arrive avec l'écran Paramètres
-// lui-même (M9).
+// Accueil (M5/M8/M9, CA3/CA9, screens.md §4). La carte « prochain ami » dépend des amis, hors
+// périmètre (cf. rapport M5) : elle nécessiterait une donnée de classement non fournie par
+// `/me/today`.
 const AUTHORIZE_ERROR = "Impossible d'activer Apple Santé pour l'instant. Vérifie ta connexion puis réessaie.";
 
 function currentLocalDate(timeZone: string): LocalDate {
@@ -112,13 +114,23 @@ export default function AccueilScreen() {
       <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
         <ScrollView
           contentContainerStyle={{ padding: 20, gap: 16 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1859B0" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={lightColors.accent} />}
         >
-          <View className="gap-1">
-            <AppText variant="subheadline" color="textSecondary">
-              {headerDate}
-            </AppText>
-            <AppText variant="largeTitle">Bonjour {me?.username ?? ""}</AppText>
+          <View className="flex-row items-start justify-between">
+            <View className="gap-1" style={{ flex: 1 }}>
+              <AppText variant="subheadline" color="textSecondary">
+                {headerDate}
+              </AppText>
+              <AppText variant="largeTitle">Bonjour {me?.username ?? ""}</AppText>
+            </View>
+            <Pressable
+              role="button"
+              aria-label="Paramètres"
+              onPress={() => router.push("/(tabs)/accueil/parametres")}
+              style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}
+            >
+              <SymbolView name="gearshape" size={24} tintColor={lightColors.text} weight="regular" />
+            </Pressable>
           </View>
 
           {view.kind === "loading" ? (

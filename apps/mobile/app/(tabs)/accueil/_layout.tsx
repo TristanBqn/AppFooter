@@ -8,6 +8,9 @@ export default function AccueilLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="historique" options={{ title: "Ton historique" }} />
       <Stack.Screen name="encouragements" options={{ title: "Encouragements reçus" }} />
+      <Stack.Screen name="parametres" options={{ title: "Paramètres" }} />
+      <Stack.Screen name="comptes-bloques" options={{ title: "Comptes bloqués" }} />
+      <Stack.Screen name="supprimer-compte" options={{ title: "Supprimer mon compte" }} />
     </Stack>
   );
 }

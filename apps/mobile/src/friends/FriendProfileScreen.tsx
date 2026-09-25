@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ENCOURAGEMENT_CATALOG, STEP_MILESTONES, type EncouragementMessageId } from "@app/contracts";
 import {
   AppText,
+  Button,
   Chip,
+  ConfirmSheet,
   ErrorState,
   GlassCard,
   LoadingState,
@@ -24,16 +26,19 @@ import { ApiClientError } from "../api/errors";
 import { formatShortDate } from "../home/formatDate";
 import { impactLight } from "../haptics";
 import { useToast } from "../hooks/useToast";
+import { emitGlobalToast } from "../toastEvents";
 import { FRIENDS_QUERY_KEY, friendActivityQueryKey } from "./queryKeys";
 
-// Fiche d'un ami (M7/M8, CA8/CA9, screens.md §7). Poussée depuis Classement ET Amis : deux
-// fichiers route minces (app/(tabs)/classement/[userId].tsx, app/(tabs)/amis/[userId].tsx)
+// Fiche d'un ami (M7/M8/M9, CA8/CA9/CA11/CA14, screens.md §7). Poussée depuis Classement ET Amis :
+// deux fichiers route minces (app/(tabs)/classement/[userId].tsx, app/(tabs)/amis/[userId].tsx)
 // rendent ce même composant, chaque onglet ayant sa propre pile de navigation (expo-router).
-// « Retirer/Bloquer » (M9, avec Paramètres > Comptes bloqués) : à ajouter dans cette tâche.
+type SensitiveAction = "remove" | "block" | null;
+
 export function FriendProfileScreen() {
   const { userId, username: usernameParam } = useLocalSearchParams<{ userId: string; username?: string }>();
   const queryClient = useQueryClient();
   const { showToast, toastElement } = useToast();
+  const [sensitiveAction, setSensitiveAction] = useState<SensitiveAction>(null);
   const query = useQuery({
     queryKey: friendActivityQueryKey(userId),
     queryFn: () => api.friends.activity(userId),
@@ -77,6 +82,42 @@ export function FriendProfileScreen() {
         error instanceof ApiClientError
           ? error.userMessage
           : "Impossible d'envoyer l'encouragement pour l'instant. Vérifie ta connexion puis réessaie.",
+      );
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: () => api.friends.remove(userId),
+    onSuccess: () => {
+      setSensitiveAction(null);
+      void queryClient.invalidateQueries({ queryKey: FRIENDS_QUERY_KEY });
+      emitGlobalToast(`${username} ne fait plus partie de tes amis`);
+      router.back();
+    },
+    onError: (error) => {
+      setSensitiveAction(null);
+      showToast(
+        error instanceof ApiClientError
+          ? error.userMessage
+          : "Impossible de retirer cet ami pour l'instant. Vérifie ta connexion puis réessaie.",
+      );
+    },
+  });
+
+  const blockMutation = useMutation({
+    mutationFn: () => api.blocks.block({ userId }),
+    onSuccess: () => {
+      setSensitiveAction(null);
+      void queryClient.invalidateQueries({ queryKey: FRIENDS_QUERY_KEY });
+      emitGlobalToast(`Blocage effectué pour ${username}`);
+      router.back();
+    },
+    onError: (error) => {
+      setSensitiveAction(null);
+      showToast(
+        error instanceof ApiClientError
+          ? error.userMessage
+          : "Impossible de bloquer ce compte pour l'instant. Vérifie ta connexion puis réessaie.",
       );
     },
   });
@@ -181,9 +222,34 @@ export function FriendProfileScreen() {
                 </View>
               </GlassCard>
             ) : null}
+
+            <View className="gap-2">
+              <Button label="Retirer de mes amis" variant="ghost" onPress={() => setSensitiveAction("remove")} />
+              <Button label="Bloquer" variant="destructive" onPress={() => setSensitiveAction("block")} accessibilityLabel={`Bloquer ${username}`} />
+            </View>
           </>
         ) : null}
       </ScrollView>
+
+      <ConfirmSheet
+        visible={sensitiveAction === "remove"}
+        title={`Retirer ${username} de tes amis ?`}
+        message="Vous ne verrez plus vos activités respectives. Tu pourras l'ajouter à nouveau plus tard."
+        confirmLabel="Retirer"
+        loading={removeMutation.isPending}
+        onConfirm={() => removeMutation.mutate()}
+        onCancel={() => setSensitiveAction(null)}
+      />
+      <ConfirmSheet
+        visible={sensitiveAction === "block"}
+        title={`Bloquer ${username} ?`}
+        message={`${username} ne pourra plus te trouver, t'envoyer de demande ni voir ton activité. Aucune notification ne lui sera envoyée.`}
+        confirmLabel="Bloquer"
+        loading={blockMutation.isPending}
+        onConfirm={() => blockMutation.mutate()}
+        onCancel={() => setSensitiveAction(null)}
+      />
+
       {toastElement}
     </SkyBackground>
   );

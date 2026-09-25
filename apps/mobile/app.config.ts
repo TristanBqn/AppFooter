@@ -35,6 +35,7 @@ const config: ExpoConfig = {
     "expo-secure-store",
     "expo-apple-authentication",
     "expo-web-browser",
+    "@react-native-community/datetimepicker",
     [
       "@kingstinct/react-native-healthkit",
       {

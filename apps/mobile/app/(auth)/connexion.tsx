@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import * as AppleAuthentication from "expo-apple-authentication";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { AppText, Button, SkyBackground } from "@app/ui";
 import { useAuth } from "../../src/auth/AuthProvider";
 import { AppleSignInCancelledError, signInWithApple } from "../../src/auth/appleSignIn";
@@ -15,6 +15,7 @@ const DEV_USER_KEY = "dev";
 export default function ConnexionScreen() {
   const { signIn } = useAuth();
   const { showToast, toastElement } = useToast();
+  const { deleted } = useLocalSearchParams<{ deleted?: string }>();
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [busy, setBusy] = useState<"apple" | "dev" | null>(null);
 
@@ -27,6 +28,14 @@ export default function ConnexionScreen() {
       active = false;
     };
   }, []);
+
+  // Retour après suppression du compte (M9, screens.md §10) : message ponctuel, pas d'erreur.
+  useEffect(() => {
+    if (deleted === "1") {
+      showToast("Ton compte a été supprimé. Merci d'avoir marché avec nous.", "info");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleted]);
 
   async function afterSignIn(session: { token: string; expiresAt: string }) {
     await signIn(session);

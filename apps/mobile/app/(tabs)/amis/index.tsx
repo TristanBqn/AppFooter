@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, Share, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,14 +25,17 @@ import { impactLight } from "../../../src/haptics";
 import { FRIENDS_QUERY_KEY, FRIEND_REQUESTS_QUERY_KEY } from "../../../src/friends/queryKeys";
 import { validateFriendUsernameLocally } from "../../../src/friends/validateUsername";
 import { useToast } from "../../../src/hooks/useToast";
+import { onGlobalToast } from "../../../src/toastEvents";
 
-// Amis (M7, CA7, CA8, screens.md §6). Le retrait et le blocage arrivent avec M9 (Paramètres et
-// Comptes bloqués) : la fiche ami (poussée d'ici) ne les propose pas encore.
+// Amis (M7/M9, CA7, CA8, CA11, screens.md §6). Le retrait et le blocage se font depuis la fiche
+// ami (M9) ; le message de confirmation arrive ici via `onGlobalToast` au retour sur cet écran.
 export default function AmisScreen() {
   const { me } = useAuth();
   const { focus } = useLocalSearchParams<{ focus?: string }>();
   const { showToast, toastElement } = useToast();
   const queryClient = useQueryClient();
+
+  useEffect(() => onGlobalToast(showToast), [showToast]);
 
   const [username, setUsername] = useState("");
   const [fieldError, setFieldError] = useState<string | undefined>(undefined);

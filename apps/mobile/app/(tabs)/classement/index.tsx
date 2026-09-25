@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
@@ -19,7 +19,9 @@ import { layout, lightColors, radius, shadow } from "@app/ui/tokens";
 import { api } from "../../../src/api/endpoints";
 import { impactLight } from "../../../src/haptics";
 import { formatHeaderDate, formatWeekRange } from "../../../src/home/formatDate";
+import { useToast } from "../../../src/hooks/useToast";
 import { buildLeaderboardBanner, leaderboardBannerText } from "../../../src/leaderboard/banner";
+import { onGlobalToast } from "../../../src/toastEvents";
 
 // Classement quotidien / hebdomadaire (M6, CA5, CA6, screens.md §5). Toucher une ligne (hors la
 // mienne) ouvre la fiche ami (M7, app/(tabs)/classement/[userId].tsx).
@@ -36,6 +38,9 @@ function friendsCountLabel(count: number): string {
 
 export default function ClassementScreen() {
   const [period, setPeriod] = useState<LeaderboardPeriod>("daily");
+  const { showToast, toastElement } = useToast();
+
+  useEffect(() => onGlobalToast(showToast), [showToast]);
 
   // Les deux périodes sont préchargées (screens.md §5) : la bascule est instantanée.
   const dailyQuery = useQuery({ queryKey: ["leaderboard", "daily"] as const, queryFn: api.leaderboards.daily });
@@ -148,6 +153,7 @@ export default function ClassementScreen() {
           </>
         ) : null}
       </ScrollView>
+      {toastElement}
     </SkyBackground>
   );
 }
