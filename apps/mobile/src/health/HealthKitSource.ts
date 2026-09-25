@@ -18,7 +18,19 @@ import { mergeDailyTotals, type StatisticsBucket } from "./aggregate";
 const STEP_TYPE = "HKQuantityTypeIdentifierStepCount" as const;
 const ACTIVE_ENERGY_TYPE = "HKQuantityTypeIdentifierActiveEnergyBurned" as const;
 
-/** Exclut les échantillons saisis manuellement (CA4). */
+/**
+ * Exclut les échantillons saisis manuellement (CA4).
+ *
+ * Risque à vérifier sur appareil réel (non testable sous Windows, checklist M11) : un prédicat
+ * `!=` sur une clé de métadonnées peut, selon la sémantique exacte de NSComparisonPredicate côté
+ * HealthKit, ne pas matcher les échantillons qui n'ont PAS du tout la clé `HKWasUserEntered`
+ * (plutôt que de les traiter comme "différents de true"). Si c'est le cas ici, ce prédicat
+ * exclurait à tort la majorité des échantillons auto-enregistrés (iPhone/Apple Watch, qui ne
+ * posent en général pas cette clé), au lieu de ne filtrer que les saisies manuelles — un
+ * sous-comptage massif des pas, silencieux. Repli prévu si le spike sur appareil confirme le
+ * problème : ne plus filtrer côté requête statistique, mais interroger les échantillons bruts
+ * (`queryQuantitySamples`) et exclure nous-mêmes ceux dont `metadata.HKWasUserEntered === true`.
+ */
 export const EXCLUDE_USER_ENTERED_FILTER = {
   withMetadataKey: "HKWasUserEntered",
   operatorType: ComparisonPredicateOperator.notEqualTo,
