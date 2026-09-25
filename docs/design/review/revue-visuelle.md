@@ -14,6 +14,34 @@
 
 Correctifs `[designer]` appliqués dans `packages/ui` (`pnpm --filter @app/ui check` vert, 132 tests) et vérifiés sur une seconde passe de captures.
 
+## Seconde passe (2026-09-25, après la boucle 1 de `mobile-2`)
+
+J'ai refait les captures avec le même script, avec `simulatedSteps` aligné sur `fmix32` et un parcours B1 qui passe par l'écran de consentement (`05-accueil-autoriser-ouvre-consentement.png`). Bilan : 20 écarts corrigés, 1 restant, 1 nouvel écart mineur.
+
+| Écart | Statut | Preuve |
+|---|---|---|
+| B1 | corrigé | `05-accueil-autoriser-ouvre-consentement.png` : l'action ouvre l'écran de consentement, dont la case est désactivée par défaut |
+| M1 | corrigé | `01-onboarding-page1/2.png` |
+| M2 | corrigé | `02-connexion.png` (Logo) |
+| **M3** | **restant** `[mobile]` | `04-consentement-pas-maintenant-toast.png` : toujours aucun toast. `onDecline` émet `emitGlobalToast` avant `goToAccueil()`. Au premier passage, l'Accueil n'est pas encore monté : personne n'écoute et le signal est perdu. Correctif : mémoriser le dernier toast en attente dans `toastEvents.ts` (`pendingToast`), que `onGlobalToast` délivre dès l'abonnement puis efface. On peut aussi passer le message en paramètre de route (`?toast=declined`), lu par l'Accueil. |
+| M4 | corrigé | `18-accueil-chargement.png` (squelette, plus d'état « consentement absent ») |
+| M5 | corrigé | `18-accueil-erreur-synchro.png` (bandeau `warningSoft`) |
+| M6 | corrigé | `18-accueil-erreur.png` (rang depuis le classement, pas « Ajoute un ami ») |
+| M7 | corrigé | `09-accueil-complet.png` (« 2e ex æquo ») |
+| M8 | corrigé | pastille « 1 » sur Amis (toutes les captures à onglets) ; libellé VoiceOver à vérifier sur appareil |
+| M9 | corrigé | `07-amis-vide.png` (« Partager mon pseudo » en `secondary`) |
+| M10 | corrigé | `13-profil-ami-complet.png` |
+| m1 | corrigé | libellé « Bloquer lea » ; variante `destructive` conservée, option admise |
+| m2 | corrigé | `13-profil-ami-complet.png` (« Ses 7 derniers jours »), `22-profil-ami-chargement.png`, `22-profil-ami-erreur.png` (actions conservées) |
+| m3 | corrigé | `09-accueil-complet.png` |
+| m4 | corrigé | `15-parametres-complet.png` |
+| m5 | corrigé | `12-classement-jour.png` |
+| m6 | corrigé | `19-classement-chargement.png`, `20-amis-chargement.png` |
+| m7 | corrigé | `11-historique-complet.png` : données variées, échelle relative lisible. Aucun jour ≥ 10 000 dans la fenêtre, donc `SunBadge` n'est pas visible (données, pas un défaut). |
+
+### Nouvel écart
+- **n1 (mineur) `[mobile]`** : squelette de l'Accueil. Capture : `18-accueil-chargement.png`. Les deux tuiles `Skeleton height={56}` (largeur 100 % par défaut) sont côte à côte dans une rangée : la seconde sort de la carte. Correctif : envelopper chaque tuile dans `<View style={{ flex: 1 }}>` (`app/(tabs)/accueil/index.tsx:156-157`).
+
 ## Limites de l'aperçu web (non comptées comme écarts, à vérifier sur appareil avec `apps/mobile/docs/checklist-m11.md`)
 - Grands titres natifs (`headerLargeTitle` + `headerTransparent`) superposés au contenu (« Classement », « Amis », pseudo de la fiche ami) : non pris en charge par le web ; sur iOS, `contentInsetAdjustmentBehavior="automatic"` décale le contenu.
 - SF Symbols absents (icônes d'onglets, engrenage de l'Accueil), libellés d'onglets rognés en bas, en-têtes de pile blancs opaques.

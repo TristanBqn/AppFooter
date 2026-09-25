@@ -78,6 +78,13 @@ function localDate(offsetDays = 0) {
 function simulatedSteps(date) {
   let hash = 0;
   for (let i = 0; i < date.length; i += 1) hash = (hash * 31 + date.charCodeAt(i)) >>> 0;
+  // Mélange final fmix32 (murmur3), identique à SimulatedHealthSource (m7).
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x85ebca6b);
+  hash ^= hash >>> 13;
+  hash = Math.imul(hash, 0xc2b2ae35);
+  hash ^= hash >>> 16;
+  hash >>>= 0;
   return Math.max(0, Math.round(6000 + (hash / 0xffffffff - 0.5) * 2 * 4000));
 }
 
@@ -281,6 +288,11 @@ try {
   await step("accueil autoriser", async () => {
     await tab("Accueil");
     await btn("Autoriser l'accès").click();
+    // B1 : l'action rouvre l'écran de consentement (aucun accord en un toucher).
+    await text("Ce que Footer utilise").waitFor({ timeout: 15_000 });
+    await shot("05-accueil-autoriser-ouvre-consentement");
+    await page.getByRole("switch").filter({ visible: true }).first().click();
+    await btn("J'accepte et je continue").click();
     await wait(3000);
     await shot("05-accueil-sans-ami", { tall: true });
   });
