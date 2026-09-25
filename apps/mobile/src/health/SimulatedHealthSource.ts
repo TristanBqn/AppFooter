@@ -5,9 +5,13 @@ import type { HealthSource } from "./HealthSource";
 import { localDateRange } from "./aggregate";
 
 export type SimulatedHealthSourceOptions = {
-  /** Pas d'un jour "moyen". Défaut : 6000. */
+  /** Pas d'un jour "moyen". Défaut : 8500 (voir `variance`, choisi pour croiser le seuil `SunBadge`). */
   baseSteps?: number;
-  /** Amplitude de variation jour à jour (+/-). Défaut : 4000. */
+  /**
+   * Amplitude de variation jour à jour (+/-). Défaut : 5000 : avec `baseSteps` par défaut, place
+   * ~30-40 % des jours au-dessus de 10 000 pas (premier seuil qui déclenche `SunBadge`, screens.md
+   * §8) sans quoi ce badge n'est jamais visible avec la source simulée.
+   */
   variance?: number;
   /** Calories actives pour 1000 pas. Défaut : 40. */
   kcalPerThousandSteps?: number;
@@ -43,8 +47,8 @@ export class SimulatedHealthSource implements HealthSource {
   private readonly kcalPerThousandSteps: number;
 
   constructor(options: SimulatedHealthSourceOptions = {}) {
-    this.baseSteps = options.baseSteps ?? 6_000;
-    this.variance = options.variance ?? 4_000;
+    this.baseSteps = options.baseSteps ?? 8_500;
+    this.variance = options.variance ?? 5_000;
     this.kcalPerThousandSteps = options.kcalPerThousandSteps ?? 40;
   }
 

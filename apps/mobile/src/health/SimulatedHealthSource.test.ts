@@ -40,12 +40,22 @@ describe("SimulatedHealthSource", () => {
     expect(distinctValues.size).toBeGreaterThan(20);
   });
 
-  it("m7 : jours au-dessus et en dessous d'un seuil (ex. 10 000 pas)", async () => {
-    // Options centrées sur le seuil (au lieu du défaut, dont l'amplitude n'atteint jamais tout à
-    // fait 10 000) : c'est cette configuration que reprend le script de captures (docs/design/review).
-    const source = new SimulatedHealthSource({ baseSteps: 9_000, variance: 3_000 });
+  it("m7 : jours au-dessus et en dessous du seuil `SunBadge` (10 000 pas)", async () => {
+    const source = new SimulatedHealthSource();
     const days = await source.getDailyTotals("2026-01-01", "2026-01-30", "Europe/Paris");
     expect(days.some((day) => day.steps >= 10_000)).toBe(true);
     expect(days.some((day) => day.steps < 10_000)).toBe(true);
+  });
+
+  it("m7 (boucle 2) : ~30-40 % des jours par défaut franchissent 10 000 pas, sans quoi SunBadge n'apparaît jamais", async () => {
+    // Historique (screens.md §8) : `SunBadge` s'affiche à partir de 10 000 pas. Avec l'ancien
+    // défaut (baseSteps 6000, variance 4000), l'amplitude [2000, 10000) n'atteignait jamais ce
+    // seuil : SunBadge n'était donc jamais visible sur la source simulée.
+    const source = new SimulatedHealthSource();
+    const days = await source.getDailyTotals("2026-01-01", "2026-01-30", "Europe/Paris");
+    const aboveThreshold = days.filter((day) => day.steps >= 10_000).length;
+    const ratio = aboveThreshold / days.length;
+    expect(ratio).toBeGreaterThanOrEqual(0.3);
+    expect(ratio).toBeLessThanOrEqual(0.4);
   });
 });
