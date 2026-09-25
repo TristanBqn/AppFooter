@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SymbolView } from "expo-symbols";
@@ -17,6 +17,7 @@ import {
   SkyBackground,
   StatTile,
   StepRing,
+  announce,
   formatKcal,
   formatNumber,
   formatRank,
@@ -188,6 +189,20 @@ type TodayCardProps = {
 
 function TodayCard({ steps, activeCalories, rank, participants, degraded }: TodayCardProps) {
   const progress = progressToNext(steps, STEP_MILESTONES);
+
+  // Franchissement d'un seuil pendant que l'écran est ouvert (screens.md §4) : annonce VoiceOver
+  // systématique (utile même animations réduites) ; le halo visuel est décoratif et volontairement
+  // omis ici (voir rapport M5), l'accessibilité ne dépend pas de lui.
+  const previousStepsRef = useRef(steps);
+  useEffect(() => {
+    const previous = previousStepsRef.current;
+    if (previous !== steps) {
+      const crossed = STEP_MILESTONES.find((milestone) => previous < milestone && steps >= milestone);
+      if (crossed !== undefined) announce(`Palier de ${formatSteps(crossed)} franchi`);
+      previousStepsRef.current = steps;
+    }
+  }, [steps]);
+
   const ringLabel = `Progression vers ${progress.next ? formatSteps(progress.next) : "tous les paliers"}`;
   const ringValue = progress.next ? `${formatSteps(steps)} sur ${formatSteps(progress.next)}` : formatSteps(steps);
   const headline =
@@ -248,7 +263,12 @@ function EncouragementsReceivedCard({ items }: { items: readonly ReceivedEncoura
         {items.map((item) => (
           <ListRow key={item.id} title={item.from.username} subtitle={encouragementText(item.messageId)} leading={<Monogram name={item.from.username} />} />
         ))}
-        <ListRow title="Tout voir" titleColor="accentText" onPress={() => router.push("/(tabs)/accueil/encouragements")} />
+        <ListRow
+          title="Tout voir"
+          titleColor="accentText"
+          onPress={() => router.push("/(tabs)/accueil/encouragements")}
+          accessibilityHint="Affiche tes encouragements reçus des 7 derniers jours"
+        />
       </View>
     </GlassCard>
   );

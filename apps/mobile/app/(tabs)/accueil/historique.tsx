@@ -102,7 +102,9 @@ function HistoryRowItem({ row, bestSteps }: { row: HistoryRow; bestSteps: number
 
   if (!row.entry) {
     // Jour sans donnée (Santé pas encore connectée ce jour-là) : jamais « 0 pas » (screens.md §8).
-    return <ListRow title={dateLabel} value="Pas de données" titleColor="textSecondary" />;
+    // `value` est déjà rendu en textSecondary par ListRow (voir packages/ui/src/components/ListRow.tsx) :
+    // seul « Pas de données » doit être atténué, pas la date elle-même.
+    return <ListRow title={dateLabel} value="Pas de données" />;
   }
 
   const { steps, activeCalories } = row.entry;
