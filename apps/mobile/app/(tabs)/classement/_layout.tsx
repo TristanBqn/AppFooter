@@ -11,6 +11,7 @@ export default function ClassementLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ title: "Classement" }} />
+      <Stack.Screen name="[userId]" options={{ headerLargeTitle: false }} />
     </Stack>
   );
 }

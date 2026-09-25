@@ -20,8 +20,8 @@ import { api } from "../../../src/api/endpoints";
 import { formatHeaderDate, formatWeekRange } from "../../../src/home/formatDate";
 import { buildLeaderboardBanner, leaderboardBannerText } from "../../../src/leaderboard/banner";
 
-// Classement quotidien / hebdomadaire (M6, CA5, CA6, screens.md §5). Le profil d'un ami (toucher
-// une ligne) arrive avec M7 (écran pas encore disponible) : RankRow reste donc non pressable ici.
+// Classement quotidien / hebdomadaire (M6, CA5, CA6, screens.md §5). Toucher une ligne (hors la
+// mienne) ouvre la fiche ami (M7, app/(tabs)/classement/[userId].tsx).
 const PERIOD_OPTIONS = [
   { value: "daily" as const, label: "Aujourd'hui" },
   { value: "weekly" as const, label: "Cette semaine" },
@@ -107,7 +107,19 @@ export default function ClassementScreen() {
             <GlassCard>
               <View className="gap-1">
                 {rows.map((row) => (
-                  <RankRow key={row.userId} rank={row.rank} tied={row.tied} name={row.username} steps={row.steps} isMe={row.isMe} />
+                  <RankRow
+                    key={row.userId}
+                    rank={row.rank}
+                    tied={row.tied}
+                    name={row.username}
+                    steps={row.steps}
+                    isMe={row.isMe}
+                    onPress={
+                      row.isMe
+                        ? undefined
+                        : () => router.push({ pathname: "/(tabs)/classement/[userId]", params: { userId: row.userId, username: row.username } })
+                    }
+                  />
                 ))}
               </View>
             </GlassCard>
@@ -117,7 +129,7 @@ export default function ClassementScreen() {
                 illustration="together"
                 title="Le classement se remplit avec tes amis"
                 message="Ajoute un proche avec son pseudo pour marcher ensemble."
-                action={{ label: "Ajouter un ami", onPress: () => router.push("/(tabs)/amis") }}
+                action={{ label: "Ajouter un ami", onPress: () => router.push({ pathname: "/(tabs)/amis", params: { focus: "1" } }) }}
               />
             ) : null}
 

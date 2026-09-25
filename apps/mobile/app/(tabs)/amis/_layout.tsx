@@ -11,6 +11,7 @@ export default function AmisLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ title: "Amis" }} />
+      <Stack.Screen name="[userId]" options={{ headerLargeTitle: false }} />
     </Stack>
   );
 }
