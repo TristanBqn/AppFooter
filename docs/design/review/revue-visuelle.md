@@ -42,6 +42,14 @@ J'ai refait les captures avec le même script, avec `simulatedSteps` aligné sur
 ### Nouvel écart
 - **n1 (mineur) `[mobile]`** : squelette de l'Accueil. Capture : `18-accueil-chargement.png`. Les deux tuiles `Skeleton height={56}` (largeur 100 % par défaut) sont côte à côte dans une rangée : la seconde sort de la carte. Correctif : envelopper chaque tuile dans `<View style={{ flex: 1 }}>` (`app/(tabs)/accueil/index.tsx:156-157`).
 
+## Vérification ciblée (boucle 2 de `mobile-2`)
+
+| Écart | Statut | Preuve |
+|---|---|---|
+| M3 | corrigé | `04-consentement-pas-maintenant-toast.png` : toast `info` « Pas de souci. Footer ne lira pas tes pas sans ton accord… » sur l'Accueil |
+| n1 | corrigé | `18-accueil-chargement.png` : deux tuiles squelette côte à côte, dans la carte |
+| SunBadge (historique) | corrigé | `11-historique.png` : source simulée 8 500 ± 5 000 (script aligné). Pastille soleil sur les jours ≥ 10 000 (25 et 20 sept.) ; les autres jours restent alignés, sans emplacement vide |
+
 ## Limites de l'aperçu web (non comptées comme écarts, à vérifier sur appareil avec `apps/mobile/docs/checklist-m11.md`)
 - Grands titres natifs (`headerLargeTitle` + `headerTransparent`) superposés au contenu (« Classement », « Amis », pseudo de la fiche ami) : non pris en charge par le web ; sur iOS, `contentInsetAdjustmentBehavior="automatic"` décale le contenu.
 - SF Symbols absents (icônes d'onglets, engrenage de l'Accueil), libellés d'onglets rognés en bas, en-têtes de pile blancs opaques.

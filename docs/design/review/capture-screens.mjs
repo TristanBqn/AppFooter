@@ -85,7 +85,7 @@ function simulatedSteps(date) {
   hash = Math.imul(hash, 0xc2b2ae35);
   hash ^= hash >>> 16;
   hash >>>= 0;
-  return Math.max(0, Math.round(6000 + (hash / 0xffffffff - 0.5) * 2 * 4000));
+  return Math.max(0, Math.round(8500 + (hash / 0xffffffff - 0.5) * 2 * 5000));
 }
 
 async function user(key, username, todaySteps) {
