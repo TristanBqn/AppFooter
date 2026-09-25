@@ -21,6 +21,7 @@ import {
 import { useAuth } from "../../../src/auth/AuthProvider";
 import { api } from "../../../src/api/endpoints";
 import { ApiClientError } from "../../../src/api/errors";
+import { impactLight } from "../../../src/haptics";
 import { FRIENDS_QUERY_KEY, FRIEND_REQUESTS_QUERY_KEY } from "../../../src/friends/queryKeys";
 import { validateFriendUsernameLocally } from "../../../src/friends/validateUsername";
 import { useToast } from "../../../src/hooks/useToast";
@@ -82,6 +83,7 @@ export default function AmisScreen() {
       showToast("Impossible d'accepter cette demande pour l'instant. Vérifie ta connexion puis réessaie.");
     },
     onSuccess: (data) => {
+      impactLight();
       queryClient.setQueryData<FriendsResponse>(FRIENDS_QUERY_KEY, (old) => {
         const rest = (old?.friends ?? []).filter((friend) => friend.userId !== data.friend.userId);
         return { friends: [...rest, data.friend].sort((a, b) => a.username.localeCompare(b.username)) };

@@ -17,6 +17,7 @@ import {
 } from "@app/ui";
 import { layout, lightColors, radius, shadow } from "@app/ui/tokens";
 import { api } from "../../../src/api/endpoints";
+import { impactLight } from "../../../src/haptics";
 import { formatHeaderDate, formatWeekRange } from "../../../src/home/formatDate";
 import { buildLeaderboardBanner, leaderboardBannerText } from "../../../src/leaderboard/banner";
 
@@ -64,7 +65,15 @@ export default function ClassementScreen() {
         contentContainerStyle={{ padding: 20, gap: 16 }}
         refreshControl={<RefreshControl refreshing={query.isFetching} onRefresh={onRefresh} tintColor={lightColors.accent} />}
       >
-        <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={setPeriod} accessibilityLabel="Période du classement" />
+        <SegmentedControl
+          options={PERIOD_OPTIONS}
+          value={period}
+          onChange={(value) => {
+            impactLight();
+            setPeriod(value);
+          }}
+          accessibilityLabel="Période du classement"
+        />
 
         {contextLabel ? (
           <AppText variant="subheadline" color="textSecondary">

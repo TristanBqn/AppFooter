@@ -7,6 +7,7 @@ export default function AccueilLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="historique" options={{ title: "Ton historique" }} />
+      <Stack.Screen name="encouragements" options={{ title: "Encouragements reçus" }} />
     </Stack>
   );
 }

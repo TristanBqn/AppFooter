@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
-import { STEP_MILESTONES } from "@app/contracts";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ENCOURAGEMENT_CATALOG, STEP_MILESTONES, type EncouragementMessageId } from "@app/contracts";
 import {
   AppText,
+  Chip,
   ErrorState,
   GlassCard,
   LoadingState,
@@ -18,21 +20,28 @@ import {
 } from "@app/ui";
 import { lightColors } from "@app/ui/tokens";
 import { api } from "../api/endpoints";
+import { ApiClientError } from "../api/errors";
 import { formatShortDate } from "../home/formatDate";
-import { friendActivityQueryKey } from "./queryKeys";
+import { impactLight } from "../haptics";
+import { useToast } from "../hooks/useToast";
+import { FRIENDS_QUERY_KEY, friendActivityQueryKey } from "./queryKeys";
 
-// Fiche d'un ami (M7, CA8, screens.md §7). Poussée depuis Classement ET Amis : deux fichiers
-// route minces (app/(tabs)/classement/[userId].tsx, app/(tabs)/amis/[userId].tsx) rendent ce même
-// composant, chaque onglet ayant sa propre pile de navigation (expo-router).
-// « Encourager » (M8) et « Retirer/Bloquer » (M9, avec Paramètres > Comptes bloqués) : à ajouter
-// dans ces tâches, hors périmètre M7 (CA7/CA8 uniquement).
+// Fiche d'un ami (M7/M8, CA8/CA9, screens.md §7). Poussée depuis Classement ET Amis : deux
+// fichiers route minces (app/(tabs)/classement/[userId].tsx, app/(tabs)/amis/[userId].tsx)
+// rendent ce même composant, chaque onglet ayant sa propre pile de navigation (expo-router).
+// « Retirer/Bloquer » (M9, avec Paramètres > Comptes bloqués) : à ajouter dans cette tâche.
 export function FriendProfileScreen() {
   const { userId, username: usernameParam } = useLocalSearchParams<{ userId: string; username?: string }>();
+  const queryClient = useQueryClient();
+  const { showToast, toastElement } = useToast();
   const query = useQuery({
     queryKey: friendActivityQueryKey(userId),
     queryFn: () => api.friends.activity(userId),
     enabled: Boolean(userId),
   });
+  // Sert uniquement à lire `encouragedToday` (absent de `FriendActivityResponse`) : déjà en cache
+  // si on vient de l'onglet Amis, sinon chargé ici (mis en cache pour l'onglet Amis à son tour).
+  const friendsQuery = useQuery({ queryKey: FRIENDS_QUERY_KEY, queryFn: api.friends.list });
 
   const username = query.data?.user.username ?? usernameParam ?? "";
   const steps = query.data?.today.steps ?? 0;
@@ -40,6 +49,37 @@ export function FriendProfileScreen() {
   const history = query.data?.history ?? [];
   const bestSteps = history.reduce((max, day) => Math.max(max, day.steps), 0);
   const progress = progressToNext(steps, STEP_MILESTONES);
+
+  const friendEntry = friendsQuery.data?.friends.find((friend) => friend.userId === userId);
+  // Deux origines pour « déjà encouragé aujourd'hui » (screens.md §7) : connu au chargement
+  // (`encouragedToday`, message envoyé inconnu) ou un envoi réussi dans cette session
+  // (`sentMessageId`, ce message précis reste visible comme « selected »).
+  const [sentMessageId, setSentMessageId] = useState<EncouragementMessageId | null>(null);
+  const [blockedByQuota, setBlockedByQuota] = useState(false);
+  const alreadySentToday = Boolean(friendEntry?.encouragedToday) || sentMessageId !== null || blockedByQuota;
+
+  const sendMutation = useMutation({
+    mutationFn: (messageId: EncouragementMessageId) => api.encouragements.send({ toUserId: userId, messageId }),
+    onSuccess: (_response, messageId) => {
+      setSentMessageId(messageId);
+      impactLight();
+      showToast(`Encouragement envoyé à ${username}`, "success");
+      void queryClient.invalidateQueries({ queryKey: FRIENDS_QUERY_KEY });
+    },
+    onError: (error) => {
+      if (error instanceof ApiClientError && error.code === "ENCOURAGEMENT_LIMIT") {
+        // Déjà envoyé aujourd'hui (autre session) : même état que `encouragedToday`, pas de ton
+        // d'erreur (screens.md §7). On ignore volontairement quel message a réellement été envoyé.
+        setBlockedByQuota(true);
+        return;
+      }
+      showToast(
+        error instanceof ApiClientError
+          ? error.userMessage
+          : "Impossible d'envoyer l'encouragement pour l'instant. Vérifie ta connexion puis réessaie.",
+      );
+    },
+  });
 
   return (
     <SkyBackground variant="sky">
@@ -99,6 +139,29 @@ export function FriendProfileScreen() {
               </View>
             </GlassCard>
 
+            <GlassCard>
+              <View className="gap-3">
+                <AppText variant="headline">Envoie-lui un mot</AppText>
+                <View className="flex-row flex-wrap gap-2">
+                  {ENCOURAGEMENT_CATALOG.map((message) => (
+                    <Chip
+                      key={message.id}
+                      label={message.text}
+                      selected={sentMessageId === message.id}
+                      disabled={alreadySentToday && sentMessageId !== message.id}
+                      accessibilityLabel={`Envoyer à ${username} : ${message.text}`}
+                      onPress={() => sendMutation.mutate(message.id)}
+                    />
+                  ))}
+                </View>
+                {alreadySentToday ? (
+                  <AppText variant="footnote" color="textSecondary">
+                    Envoyé aujourd'hui. Tu pourras l'encourager à nouveau demain.
+                  </AppText>
+                ) : null}
+              </View>
+            </GlassCard>
+
             {history.length > 0 ? (
               <GlassCard>
                 <View className="gap-3">
@@ -121,6 +184,7 @@ export function FriendProfileScreen() {
           </>
         ) : null}
       </ScrollView>
+      {toastElement}
     </SkyBackground>
   );
 }

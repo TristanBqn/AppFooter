@@ -11,6 +11,7 @@ import {
   GlassCard,
   ListRow,
   LoadingState,
+  Monogram,
   Skeleton,
   SkyBackground,
   StatTile,
@@ -24,6 +25,9 @@ import {
 import { useAuth } from "../../../src/auth/AuthProvider";
 import { api } from "../../../src/api/endpoints";
 import { ApiClientError } from "../../../src/api/errors";
+import { encouragementText } from "../../../src/encouragements/catalog";
+import { RECEIVED_ENCOURAGEMENTS_QUERY_KEY } from "../../../src/encouragements/queryKeys";
+import { hasEncouragementOn, sortByMostRecent, type ReceivedEncouragement } from "../../../src/encouragements/receivedView";
 import { getHealthSource } from "../../../src/health";
 import { formatHeaderDate } from "../../../src/home/formatDate";
 import { TODAY_QUERY_KEY } from "../../../src/home/todayQuery";
@@ -31,9 +35,9 @@ import { buildTodayViewModel } from "../../../src/home/todayViewModel";
 import { useActivitySync } from "../../../src/sync/useActivitySync";
 import { useToast } from "../../../src/hooks/useToast";
 
-// Accueil (M5, CA3, screens.md §4). La carte « prochain ami » et les « encouragements reçus »
-// dépendent des amis/encouragements (M7/M8, hors périmètre M5) : ajoutées dans ces tâches. Le
-// bouton engrenage (Paramètres) arrive avec l'écran Paramètres lui-même (M9).
+// Accueil (M5/M8, CA3/CA9, screens.md §4). La carte « prochain ami » dépend des amis (hors
+// périmètre, cf. rapport M5). Le bouton engrenage (Paramètres) arrive avec l'écran Paramètres
+// lui-même (M9).
 const AUTHORIZE_ERROR = "Impossible d'activer Apple Santé pour l'instant. Vérifie ta connexion puis réessaie.";
 
 function currentLocalDate(timeZone: string): LocalDate {
@@ -60,6 +64,11 @@ export default function AccueilScreen() {
     queryKey: TODAY_QUERY_KEY,
     queryFn: api.today,
     enabled: hasConsent,
+  });
+
+  const receivedQuery = useQuery({
+    queryKey: RECEIVED_ENCOURAGEMENTS_QUERY_KEY,
+    queryFn: api.encouragements.received,
   });
 
   const view = buildTodayViewModel({
@@ -94,6 +103,9 @@ export default function AccueilScreen() {
 
   const refreshing = syncing || todayQuery.isFetching;
   const headerDate = formatHeaderDate(todayQuery.data?.date ?? localToday?.date ?? currentLocalDate(timeZone));
+  const todayLocalDate = todayQuery.data?.date ?? localToday?.date ?? currentLocalDate(timeZone);
+  const receivedItems = receivedQuery.data ? sortByMostRecent(receivedQuery.data.encouragements) : [];
+  const showEncouragementsCard = hasEncouragementOn(receivedItems, todayLocalDate, timeZone);
 
   return (
     <SkyBackground variant="sky">
@@ -143,6 +155,8 @@ export default function AccueilScreen() {
           {view.kind === "data" ? (
             <TodayCard steps={view.steps} activeCalories={view.activeCalories} rank={view.rank} participants={view.participants} degraded={view.degraded} />
           ) : null}
+
+          {showEncouragementsCard ? <EncouragementsReceivedCard items={receivedItems.slice(0, 3)} /> : null}
 
           <ListRow title="Tes 30 derniers jours" onPress={() => router.push("/(tabs)/accueil/historique")} />
         </ScrollView>
@@ -212,5 +226,18 @@ function TodayCard({ steps, activeCalories, rank, participants, degraded }: Toda
         </View>
       </GlassCard>
     </View>
+  );
+}
+
+function EncouragementsReceivedCard({ items }: { items: readonly ReceivedEncouragement[] }) {
+  return (
+    <GlassCard>
+      <View className="gap-1">
+        {items.map((item) => (
+          <ListRow key={item.id} title={item.from.username} subtitle={encouragementText(item.messageId)} leading={<Monogram name={item.from.username} />} />
+        ))}
+        <ListRow title="Tout voir" titleColor="accentText" onPress={() => router.push("/(tabs)/accueil/encouragements")} />
+      </View>
+    </GlassCard>
   );
 }
