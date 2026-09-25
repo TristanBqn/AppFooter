@@ -2,6 +2,7 @@
   "name": "@app/mobile",
   "version": "1.0.0",
   "private": true,
+  "// security": "Revue R3 (docs/review.md) : decode-uri-component < 0.5.0 (ReDoS), dépendance transitive via expo-router -> query-string. Risque accepté, pas d'override pnpm : 0.5.0 est un paquet ESM pur sans condition require, incompatible avec le require() CJS de query-string@7.1.3 (voir pnpm-workspace.yaml pour le détail testé). Surface : embarqué dans l'app via expo-router (analyse d'URL et de liens profonds) ; une URL malformée peut figer l'app localement, sans fuite de données ni impact serveur. À réévaluer à la prochaine mise à jour d'expo-router (voir docs/avancement.md, dette acceptée). uuid < 11.1.1 (même chaîne) est corrigé par l'override pnpm-workspace.yaml.",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
